@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut rng = rand::thread_rng();
 
     // Create world and camera
-    let (cam, world) = two_spheres(&mut rng, img_w, img_h);
+    let (cam, world) = perlin_spheres(&mut rng, img_w, img_h);
 
     // Raytrace!
     /* Single thread */

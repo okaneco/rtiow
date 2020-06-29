@@ -8,6 +8,7 @@ pub mod camera;
 pub mod conversion;
 pub mod hittable;
 pub mod material;
+pub mod perlin;
 pub mod ray;
 pub mod render;
 pub mod scene;

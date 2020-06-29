@@ -7,7 +7,8 @@ use crate::camera::Camera;
 use crate::hittable::{HittableList, MovingSphere, Sphere};
 use crate::material::Material::{Dielectric, Lambertian, Metallic};
 use crate::material::{Diel, Lambert, Metal};
-use crate::texture::{Checker, SolidColor};
+use crate::perlin::NoiseType;
+use crate::texture::{Checker, Noise, SolidColor};
 use crate::vec3::{Color, Point3, Vec3};
 
 /// Section 2.5: Book cover scene but with motion blur.
@@ -233,6 +234,50 @@ pub fn two_spheres<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
     let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let vfov = 20.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+    (cam, world)
+}
+
+/// Section 5.1: Scene with two Perlin spheres.
+pub fn perlin_spheres<R: rand::Rng>(
+    _rng: &mut R,
+    img_w: u32,
+    img_h: u32,
+) -> (Camera, HittableList) {
+    let perlin_tex = Arc::new(Noise::new_with(1.0, NoiseType::Square, 1.0, 7, 10.0));
+
+    let mut world = HittableList::with_capacity(2);
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Lambertian(Lambert::new(perlin_tex.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Lambertian(Lambert::new(perlin_tex.clone())),
+    )));
+
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 40.0;
     let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
     let focus_dist = 10.0;
     let aperture = 0.0;
