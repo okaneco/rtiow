@@ -2,6 +2,8 @@
 
 use rand::Rng;
 
+use crate::conversion::TWO_PI;
+
 /// General purpose Vector3 struct, basis for `Color` and `Point3` struct types.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Vec3(pub f64, pub f64, pub f64);
@@ -14,8 +16,6 @@ pub struct ColorU8(pub u8, pub u8, pub u8);
 pub type Color = crate::vec3::Vec3;
 /// Point struct holding (x, y, z).
 pub type Point3 = crate::vec3::Vec3;
-
-const TWO_PI: f64 = 2.0 * core::f64::consts::PI;
 
 impl Vec3 {
     /// Create a new `Vec3`.

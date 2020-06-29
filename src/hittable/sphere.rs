@@ -1,10 +1,10 @@
+use crate::conversion::{PI, TWO_PI};
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-
 /// Sphere object.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct Sphere {
     /// Center point of sphere.
     pub center: Point3,
@@ -25,6 +25,14 @@ impl Sphere {
     }
 }
 
+/// Utitilfy function for calculating the texture coordinates of a sphere.
+pub fn get_sphere_uv(p: &Vec3, u: &mut f64, v: &mut f64) {
+    let phi = p.z().atan2(p.x());
+    let theta = p.y().asin();
+    *u = 1.0 - (phi + PI) * TWO_PI.recip();
+    *v = (theta + core::f64::consts::FRAC_PI_2) * PI.recip();
+}
+
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc: Vec3 = r.origin() - self.center;
@@ -40,8 +48,13 @@ impl Hittable for Sphere {
                 rec.t = temp;
                 rec.p = r.at(rec.t);
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
+                get_sphere_uv(
+                    &((rec.p - self.center) * self.radius.recip()),
+                    &mut rec.u,
+                    &mut rec.v,
+                );
                 rec.set_face_normal(r, &outward_normal);
-                rec.material = self.material;
+                rec.material = self.material.clone();
                 return true;
             }
             let temp = (-half_b + root) / a;
@@ -49,8 +62,13 @@ impl Hittable for Sphere {
                 rec.t = temp;
                 rec.p = r.at(rec.t);
                 let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
+                get_sphere_uv(
+                    &((rec.p - self.center) * self.radius.recip()),
+                    &mut rec.u,
+                    &mut rec.v,
+                );
                 rec.set_face_normal(r, &outward_normal);
-                rec.material = self.material;
+                rec.material = self.material.clone();
                 return true;
             }
         }
@@ -68,7 +86,7 @@ impl Hittable for Sphere {
 }
 
 /// Moving sphere object, used for motion blur.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub struct MovingSphere {
     /// Initial center point of sphere.
     pub center0: Point3,
@@ -127,7 +145,7 @@ impl Hittable for MovingSphere {
                 rec.p = r.at(rec.t);
                 let outward_normal: Vec3 = (rec.p - self.center(r.time())) / self.radius;
                 rec.set_face_normal(r, &outward_normal);
-                rec.material = self.material;
+                rec.material = self.material.clone();
                 return true;
             }
             let temp = (-half_b + root) / a;
@@ -136,7 +154,7 @@ impl Hittable for MovingSphere {
                 rec.p = r.at(rec.t);
                 let outward_normal: Vec3 = (rec.p - self.center(r.time())) / self.radius;
                 rec.set_face_normal(r, &outward_normal);
-                rec.material = self.material;
+                rec.material = self.material.clone();
                 return true;
             }
         }

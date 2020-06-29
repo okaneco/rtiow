@@ -78,6 +78,11 @@ Final scene as on the cover of the book, with some personal touches added
 
 Chapter 2: Bouncing Spheres, simulating motion blur  
 ![bouncing spheres](img/second/00-bouncing-spheres.jpg)  
+Chapter 4: Added a checkerboard texture to the ground, implemented bounding
+volume hierarchies for render speedup  
+![checkerboard floor](img/second/01-checker-world.jpg)  
+Two checker spheres
+![checkered spheres](img/second/02-checker-spheres.jpg)  
 
 
 <a name="restofyourlife"></a>

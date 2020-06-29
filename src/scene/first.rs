@@ -6,6 +6,7 @@ use crate::camera::Camera;
 use crate::hittable::{HittableList, Sphere};
 use crate::material::Material::{Dielectric, Lambertian, Metallic};
 use crate::material::{Diel, Lambert, Metal};
+use crate::texture::SolidColor;
 use crate::vec3::{Color, Point3, Vec3};
 
 /// The first scene in the book with multiple balls and materials.
@@ -15,12 +16,12 @@ pub fn base_metal_lambert(img_w: u32, img_h: u32) -> (crate::camera::Camera, Hit
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 0.0, -1.0),
         0.5,
-        Lambertian(Lambert::new(Color::new(0.7, 0.3, 0.3))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.7, 0.3, 0.3)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        Lambertian(Lambert::new(Color::new(0.8, 0.8, 0.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.8, 0.8, 0.0)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
@@ -59,7 +60,7 @@ pub fn all_refract() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        Lambertian(Lambert::new(Color::new(0.8, 0.8, 0.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.8, 0.8, 0.0)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
@@ -81,12 +82,12 @@ pub fn sometimes_refract() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 0.0, -1.0),
         0.5,
-        Lambertian(Lambert::new(Color::new(0.1, 0.2, 0.5))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.1, 0.2, 0.5)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        Lambertian(Lambert::new(Color::new(0.8, 0.8, 0.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.8, 0.8, 0.0)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
@@ -108,12 +109,12 @@ pub fn bubble() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 0.0, -1.0),
         0.5,
-        Lambertian(Lambert::new(Color::new(0.1, 0.2, 0.5))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.1, 0.2, 0.5)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        Lambertian(Lambert::new(Color::new(0.8, 0.8, 0.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.8, 0.8, 0.0)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
@@ -141,12 +142,12 @@ pub fn wide_view() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(-r, 0.0, -1.0),
         r,
-        Lambertian(Lambert::new(Color::new(0.0, 1.0, 1.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.0, 1.0, 1.0)))),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(r, 0.0, -1.0),
         r,
-        Lambertian(Lambert::new(Color::new(1.0, 0.2, 0.0))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(1.0, 0.2, 0.0)))),
     )));
     world
 }
@@ -162,7 +163,7 @@ pub fn final_scene<R: rand::Rng>(
     world.add(Arc::new(Sphere::new(
         Point3::new(0.5, -1000.0, 0.0),
         1000.0,
-        Lambertian(Lambert::new(Color::new_with(0.5))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new_with(0.5)))),
     )));
 
     // Add more balls to the scene and randomize the radius of the smaller ones
@@ -183,7 +184,9 @@ pub fn final_scene<R: rand::Rng>(
                 world.add(Arc::new(Sphere::new(
                     center,
                     radius,
-                    Lambertian(Lambert::new(Color::random(rng) * Color::random(rng))),
+                    Lambertian(Lambert::new(Arc::new(SolidColor::from_color(
+                        Color::random(rng) * Color::random(rng),
+                    )))),
                 )));
             } else if choose_mat < 0.95 {
                 // metal
@@ -212,7 +215,7 @@ pub fn final_scene<R: rand::Rng>(
     world.add(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
-        Lambertian(Lambert::new(Color::new(0.4, 0.2, 0.1))),
+        Lambertian(Lambert::new(Arc::new(SolidColor::new(0.4, 0.2, 0.1)))),
     )));
 
     world.add(Arc::new(Sphere::new(

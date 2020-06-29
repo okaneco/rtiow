@@ -1,4 +1,9 @@
-//! Various helper functions for faster conversion between float and integers.
+//! Various utility functions for faster conversion between float and integers.
+
+/// The numeric constant PI.
+pub const PI: f64 = core::f64::consts::PI;
+/// The numeric constant PI multiplied by 2.
+pub const TWO_PI: f64 = 2.0 * core::f64::consts::PI;
 
 // C23 = 2^23, in f32
 // C52 = 2^52, in f64

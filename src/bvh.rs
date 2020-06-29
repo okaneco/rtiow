@@ -14,10 +14,6 @@ pub struct BvhNode {
     pub right: Option<Arc<dyn Hittable + Send + Sync>>,
     /// Bounding box of node.
     pub bbox: Aabb,
-    // /// Initial time of node.
-    // pub time0: f64,
-    // /// Final time of node.
-    // pub time1: f64,
 }
 
 impl BvhNode {
@@ -101,6 +97,11 @@ impl BvhNode {
 
         if !left_node || !right_node {
             eprintln!("No bounding box in bvh_node constructor.\n");
+            return Self {
+                left: None,
+                right: None,
+                bbox: Aabb::default(),
+            };
         }
 
         let bbox = Aabb::surrounding_box(&box_left, &box_right);

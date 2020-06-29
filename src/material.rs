@@ -1,11 +1,14 @@
 //! Materials that can be struck by a ray and how they affect light.
 
+use std::sync::Arc;
+
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::texture::{SolidColor, Texture};
 use crate::vec3::{Color, Vec3};
 
 /// Type of material.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone)]
 pub enum Material {
     /// Diffuse material.
     Lambertian(Lambert),
@@ -35,7 +38,7 @@ impl Material {
             Material::Lambertian(mat) => {
                 let scatter_dir = rec.normal + Vec3::random_unit_vector(rng);
                 *scattered = Ray::new(rec.p, scatter_dir, r_in.time());
-                *attenuation = mat.albedo;
+                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
                 true
             }
             Material::Metallic(mat) => {
@@ -72,16 +75,24 @@ impl Material {
 }
 
 /// Diffuse material.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone)]
 pub struct Lambert {
     /// Base color of the material.
-    pub albedo: Color,
+    pub albedo: Arc<dyn Texture + Send + Sync>,
 }
 
 impl Lambert {
     /// Create a new `Lambert` material.
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(color: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { albedo: color }
+    }
+}
+
+impl core::default::Default for Lambert {
+    fn default() -> Self {
+        Self {
+            albedo: Arc::new(SolidColor::new(0.2, 0.6, 0.8)),
+        }
     }
 }
 

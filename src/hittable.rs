@@ -7,7 +7,7 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 /// A record of an object's status for being hit by a `Ray`.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct HitRecord {
     /// Point where the `Ray` struck.
     pub p: Point3,
@@ -17,6 +17,10 @@ pub struct HitRecord {
     pub material: Material,
     /// Where along the `Ray` the object was struck.
     pub t: f64,
+    /// U surface coordinate of the object.
+    pub u: f64,
+    /// V surface coordinate of the object.
+    pub v: f64,
     /// Whether the object struck was the front face.
     pub front_face: bool,
 }
@@ -46,4 +50,4 @@ mod list;
 mod sphere;
 
 pub use list::HittableList;
-pub use sphere::{MovingSphere, Sphere};
+pub use sphere::{get_sphere_uv, MovingSphere, Sphere};
