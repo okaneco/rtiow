@@ -5,7 +5,7 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::vec3::{Color, Point3, Vec3};
 
 /// Ray struct used for calculating where light hits in the scene.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Ray {
     /// Origin point of the `Ray`.
     pub orig: Point3,

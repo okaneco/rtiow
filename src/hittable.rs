@@ -7,7 +7,7 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 /// A record of an object's status for being hit by a `Ray`.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct HitRecord {
     /// Point where the `Ray` struck.
     pub p: Point3,
@@ -38,6 +38,8 @@ impl HitRecord {
 pub trait Hittable {
     /// Determine whether a ray hits an object.
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    /// Compute the bounding box of an object.
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool;
 }
 
 mod list;

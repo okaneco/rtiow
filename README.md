@@ -33,43 +33,43 @@ cargo run --release -- [filename.ppm] [samples] [width] [height]
 
 All images were done with 100 samples and 50 bounces.
 
-00-blue-blend.jpg  
+Creating a blue to white background gradient  
 ![blue blend](img/first/00-blue-blend.jpg)  
-01-red-sphere.jpg  
+Placing the first sphere in the scene  
 ![red sphere](img/first/01-red-sphere.jpg)  
-02-sphere-normals.jpg  
+Showing the normals of the sphere's surface  
 ![sphere normals](img/first/02-sphere-normals.jpg)  
-03-normal-sphere-ground.jpg  
+Adding a ground plane with another large sphere  
 ![normal sphere ground](img/first/03-normal-sphere-ground.jpg)  
-04-multi-sample.jpg  
+Multiple samples per pixel, anti-aliasing  
 ![multi sample](img/first/04-multi-sample.jpg)  
-05-diffuse.jpg  
+The first diffuse material  
 ![diffuse](img/first/05-diffuse.jpg)  
-06-diffuse-gamma-correct.jpg  
+Gamma correcting the linear light  
 ![diffuse gamma correct](img/first/06-diffuse-gamma-correct.jpg)  
-07-diffuse-random-unit-vector.jpg  
+Improving the scattering calculation  
 ![diffuse random unit vector](img/first/07-diffuse-random-unit-vector.jpg)  
-08-materials-lambert.jpg  
+The first Lambert material  
 ![materials lambert](img/first/08-materials-lambert.jpg)  
-09-metals.jpg  
+Adding metallic materials  
 ![metals](img/first/09-metals.jpg)  
-10-all-refract.jpg  
+First pass of dielectric materials, light is only reflected  
 ![all refract](img/first/10-all-refract.jpg)  
-11-sometimes-refract.jpg  
+Added the chance for refraction to occur  
 ![sometimes refract](img/first/11-sometimes-refract.jpg)  
-12-bubble.jpg  
+Placed another sphere inside the dielectric to make a glass bubble effect  
 ![bubble](img/first/12-bubble.jpg)  
-13-snell.jpg  
+Added a Snell's law correction  
 ![snell](img/first/13-snell.jpg)  
-14-wide-view.jpg  
+Added camera controls to adjust the field of view  
 ![wide view](img/first/14-wide-view.jpg)  
-15-distant-view.jpg  
+Adjusting FOV for zooming out  
 ![distant view](img/first/15-distant-view.jpg)  
-16-zoom-view.jpg  
+Zooming in with another FOV adjustment  
 ![zoom view](img/first/16-zoom-view.jpg)  
-17-dof.jpg  
+Depth of field blur is added  
 ![dof](img/first/17-dof.jpg)  
-18-final-scene.jpg  
+Final scene as on the cover of the book, with some personal touches added  
 ![final scene](img/first/18-final-scene.jpg)  
 
 

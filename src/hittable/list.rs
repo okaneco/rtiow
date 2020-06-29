@@ -57,4 +57,27 @@ impl Hittable for HittableList {
 
         hit_anything
     }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool {
+        if self.objects.is_empty() {
+            return false;
+        }
+
+        let mut temp_box = crate::aabb::Aabb::default();
+        let mut first_box = true;
+
+        for object in self.objects.iter() {
+            if !(object.bounding_box(t0, t1, &mut temp_box)) {
+                return false;
+            }
+            *output_box = if first_box {
+                temp_box
+            } else {
+                crate::aabb::Aabb::surrounding_box(output_box, &temp_box)
+            };
+            first_box = false;
+        }
+
+        true
+    }
 }

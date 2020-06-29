@@ -4,7 +4,7 @@ use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
 
 /// Sphere object.
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Sphere {
     /// Center point of sphere.
     pub center: Point3,
@@ -57,10 +57,18 @@ impl Hittable for Sphere {
 
         false
     }
+
+    fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut crate::aabb::Aabb) -> bool {
+        *output_box = crate::aabb::Aabb {
+            min: self.center - Vec3::new_with(self.radius),
+            max: self.center + Vec3::new_with(self.radius),
+        };
+        return true;
+    }
 }
 
 /// Moving sphere object, used for motion blur.
-#[derive(Debug, Copy, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct MovingSphere {
     /// Initial center point of sphere.
     pub center0: Point3,
@@ -134,5 +142,18 @@ impl Hittable for MovingSphere {
         }
 
         false
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool {
+        let box0 = crate::aabb::Aabb {
+            min: self.center(t0) - Vec3::new_with(self.radius),
+            max: self.center(t0) + Vec3::new_with(self.radius),
+        };
+        let box1 = crate::aabb::Aabb {
+            min: self.center(t1) - Vec3::new_with(self.radius),
+            max: self.center(t1) + Vec3::new_with(self.radius),
+        };
+        *output_box = crate::aabb::Aabb::surrounding_box(&box0, &box1);
+        return true;
     }
 }

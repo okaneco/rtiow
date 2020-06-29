@@ -5,7 +5,7 @@ use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
 
 /// Type of material.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Material {
     /// Diffuse material.
     Lambertian(Lambert),
@@ -72,7 +72,7 @@ impl Material {
 }
 
 /// Diffuse material.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Lambert {
     /// Base color of the material.
     pub albedo: Color,
@@ -86,7 +86,7 @@ impl Lambert {
 }
 
 /// Metallic material.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Metal {
     /// Base color of the material.
     pub albedo: Color,
@@ -100,7 +100,7 @@ impl Metal {
 }
 
 /// Dielectric material for simulating clear objects like water and glass.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Diel {
     /// Refraction index of the dielectric.
     ///

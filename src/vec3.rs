@@ -3,11 +3,11 @@
 use rand::Rng;
 
 /// General purpose Vector3 struct, basis for `Color` and `Point3` struct types.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Vec3(pub f64, pub f64, pub f64);
 
 /// Struct for 8-bit color used in image output.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct ColorU8(pub u8, pub u8, pub u8);
 
 /// Color struct holding (R, G, B).
