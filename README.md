@@ -76,6 +76,9 @@ All images were done with 100 samples and 50 bounces.
 <a name="nextweek"></a>
 ## *The Next Week*
 
+Chapter 2: Bouncing Spheres, simulating motion blur  
+![bouncing spheres](img/second/00-bouncing-spheres.jpg)  
+
 
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*

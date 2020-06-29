@@ -11,12 +11,14 @@ pub struct Ray {
     pub orig: Point3,
     /// Direction of the `Ray`.
     pub dir: Vec3,
+    /// The time at which a `Ray` existed.
+    pub time: f64,
 }
 
 impl Ray {
     /// Create a new `Ray`.
-    pub fn new(orig: Point3, dir: Vec3) -> Self {
-        Ray { orig, dir }
+    pub fn new(orig: Point3, dir: Vec3, time: f64) -> Self {
+        Self { orig, dir, time }
     }
 
     /// Return the origin of the `Ray`.
@@ -27,6 +29,11 @@ impl Ray {
     /// Return the direction of the `Ray`.
     pub fn direction(&self) -> Vec3 {
         self.dir
+    }
+
+    /// Return the time information of the `Ray`.
+    pub fn time(&self) -> f64 {
+        self.time
     }
 
     /// Return a point along the `Ray`.

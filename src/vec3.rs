@@ -20,12 +20,12 @@ const TWO_PI: f64 = 2.0 * core::f64::consts::PI;
 impl Vec3 {
     /// Create a new `Vec3`.
     pub fn new(a: f64, b: f64, c: f64) -> Self {
-        Vec3(a, b, c)
+        Self(a, b, c)
     }
 
     /// Create a new `Vec3` with the same value for all fields.
     pub fn new_with(a: f64) -> Self {
-        Vec3(a, a, a)
+        Self(a, a, a)
     }
 
     /// Return the first element of the tuple.

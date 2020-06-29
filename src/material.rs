@@ -34,13 +34,13 @@ impl Material {
         match self {
             Material::Lambertian(mat) => {
                 let scatter_dir = rec.normal + Vec3::random_unit_vector(rng);
-                *scattered = Ray::new(rec.p, scatter_dir);
+                *scattered = Ray::new(rec.p, scatter_dir, r_in.time());
                 *attenuation = mat.albedo;
                 true
             }
             Material::Metallic(mat) => {
                 let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-                *scattered = Ray::new(rec.p, reflected);
+                *scattered = Ray::new(rec.p, reflected, r_in.time());
                 *attenuation = mat.albedo;
                 scattered.direction().dot(&rec.normal) > 0.0
             }
@@ -60,10 +60,10 @@ impl Material {
                     || rng.gen::<f64>() < schlick(cos_theta, etai_over_etat)
                 {
                     let reflected = Vec3::reflect(&unit_dir, &rec.normal);
-                    *scattered = Ray::new(rec.p, reflected);
+                    *scattered = Ray::new(rec.p, reflected, r_in.time());
                 } else {
                     let refracted = Vec3::refract(&unit_dir, &rec.normal, etai_over_etat);
-                    *scattered = Ray::new(rec.p, refracted);
+                    *scattered = Ray::new(rec.p, refracted, r_in.time());
                 }
                 true
             }

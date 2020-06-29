@@ -1,8 +1,6 @@
 #![warn(rust_2018_idioms, unsafe_code)]
 
-use rand::SeedableRng;
-
-use rtiow::scene::first::*;
+use rtiow::scene::second::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize values for the image output
@@ -11,9 +9,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let samples: u32 = 100;
     let max_depth = 50;
-    let seed: u64 = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)?
-        .as_secs();
 
     // Cli arg parsing. `-- image0.ppm samples width height`.
     let mut args = std::env::args().skip(1);
@@ -32,32 +27,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
     );
     let mut w = std::io::BufWriter::new(std::fs::File::create(&filename)?);
-    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
+    let mut rng = rand::thread_rng();
 
     // Create world and camera
-
-    let world = final_scene(&mut rng);
-
-    let lookfrom = rtiow::vec3::Point3::new(13.0, 2.0, 3.0);
-    let lookat = rtiow::vec3::Point3::new(0.0, 0.0, 0.0);
-    let vup = rtiow::vec3::Vec3::new(0.0, 1.0, 0.0);
-    let vfov = 20.0;
-    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
-    let focus_dist = 10.0;
-    let aperture = 0.0;
-
-    let cam = rtiow::camera::Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        vfov,
-        aspect_ratio,
-        aperture,
-        focus_dist,
-    );
-
-    // let world = sometimes_refract();
-    // let cam = rtiow::camera::Camera::default();
+    let (cam, world) = bouncing_spheres(&mut rng, img_w, img_h);
 
     // Raytrace!
     /* Single thread */
