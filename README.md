@@ -140,11 +140,16 @@ Adding a sphere to the scene, 1000 samples
 ![sphere light](img/second/15-sphere-light.jpg)  
 <a name="7.6"></a>
 Noisy, empty Cornell box. Aspect ratio changed to 1:1. My result doesn't look
-like the Cornell box in the book which is very shadowy.  
+like the Cornell box in the book which is very shadowy  
 ![sphere light](img/second/16-empty-box.jpg)  
 Added flipped face material for less noise with Aarect planes. There doesn't
-seem to be much a difference, I'm not sure where the discrepancy lies.  
+seem to be much a difference, I'm not sure where the discrepancy lies  
 ![sphere light](img/second/17-flip-face.jpg)  
+Cornell box, now with blocks but not rotated, 1000 samples  
+![sphere light](img/second/18-cornell-blocks.jpg)  
+Standard Cornell box scene with rotated boxes, 1000 samples  
+![cornell box scene](img/second/19-cornell-rotated.jpg)  
+
 
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*

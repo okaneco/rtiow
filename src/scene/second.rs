@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::aarect::{AaRect, Plane};
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
-use crate::hittable::{FlipFace, HittableList, MovingSphere, Sphere};
+use crate::hittable::{BoxPrim, FlipFace, HittableList, MovingSphere, RotateY, Sphere, Translate};
 use crate::material::Material::{Dielectric, DiffLight, Lambertian, Metallic};
 use crate::material::{Diel, DiffuseLight, Lambert, Metal};
 use crate::perlin::NoiseType;
@@ -370,7 +370,7 @@ pub fn simple_light<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Came
         1.0,
         3.0,
         -2.0,
-        DiffLight(difflight.clone()),
+        Arc::new(DiffLight(difflight.clone())),
         Plane::Xy,
     )));
 
@@ -407,9 +407,15 @@ pub fn naive_cornell_box<R: rand::Rng>(
 ) -> (Camera, HittableList) {
     let mut world = HittableList::new();
 
-    let red = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.65, 0.05, 0.05))));
-    let white = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.73, 0.73, 0.73))));
-    let green = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.12, 0.45, 0.15))));
+    let red = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let white = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.73, 0.73, 0.73,
+    )))));
+    let green = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.12, 0.45, 0.15,
+    )))));
     let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(15.0))));
 
     // Light
@@ -419,7 +425,7 @@ pub fn naive_cornell_box<R: rand::Rng>(
         227.0,
         332.0,
         554.0,
-        DiffLight(difflight.clone()),
+        Arc::new(DiffLight(difflight.clone())),
         Plane::Xz,
     )));
 
@@ -499,9 +505,15 @@ pub fn naive_cornell_box<R: rand::Rng>(
 pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camera, HittableList) {
     let mut world = HittableList::new();
 
-    let red = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.65, 0.05, 0.05))));
-    let white = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.73, 0.73, 0.73))));
-    let green = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.12, 0.45, 0.15))));
+    let red = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let white = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.73, 0.73, 0.73,
+    )))));
+    let green = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.12, 0.45, 0.15,
+    )))));
     let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(15.0))));
 
     // Light
@@ -511,7 +523,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         227.0,
         332.0,
         554.0,
-        DiffLight(difflight.clone()),
+        Arc::new(DiffLight(difflight.clone())),
         Plane::Xz,
     )));
 
@@ -561,6 +573,29 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         white.clone(),
         Plane::Xy,
     )))));
+
+    let box1 = Arc::new(BoxPrim::new(
+        &Point3::new_with(0.0),
+        &Point3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+
+    let box1 = Translate::new(
+        Arc::new(RotateY::new(box1.clone(), 15.0, 0.0, 1.0)),
+        Vec3::new(265.0, 0.0, 295.0),
+    );
+    world.add(Arc::new(box1));
+
+    let box2 = Arc::new(BoxPrim::new(
+        &Point3::new_with(0.0),
+        &Point3::new_with(165.0),
+        white.clone(),
+    ));
+    let box2 = Translate::new(
+        Arc::new(RotateY::new(box2.clone(), -18.0, 0.0, 1.0)),
+        Vec3::new(130.0, 0.0, 65.0),
+    );
+    world.add(Arc::new(box2));
 
     let lookfrom = Point3::new(278.0, 278.0, -800.0);
     let lookat = Point3::new(278.0, 278.0, 0.0);

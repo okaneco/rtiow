@@ -26,7 +26,7 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    /// Determine whether the `Ray` struck the outward face of an object.
+    /// Determine whether the `Ray` struck from inside or outside of an object.
     #[inline]
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
         self.front_face = r.direction().dot(&outward_normal) < 0.0;
@@ -46,10 +46,14 @@ pub trait Hittable {
     fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool;
 }
 
+mod box_prim;
 mod flip_face;
 mod list;
 mod sphere;
+mod translate;
 
+pub use box_prim::BoxPrim;
 pub use flip_face::FlipFace;
 pub use list::HittableList;
 pub use sphere::{get_sphere_uv, MovingSphere, Sphere};
+pub use translate::{RotateY, Translate};

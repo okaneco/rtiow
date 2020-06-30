@@ -38,14 +38,22 @@ pub enum Plane {
 
 impl AaRect {
     /// Create an axis-aligned rectangle.
-    pub fn new(a0: f64, a1: f64, b0: f64, b1: f64, k: f64, mp: Material, plane: Plane) -> Self {
+    pub fn new(
+        a0: f64,
+        a1: f64,
+        b0: f64,
+        b1: f64,
+        k: f64,
+        mp: std::sync::Arc<Material>,
+        plane: Plane,
+    ) -> Self {
         Self {
             a0,
             a1,
             b0,
             b1,
             k,
-            mp: std::sync::Arc::new(mp),
+            mp,
             plane,
         }
     }
