@@ -8,7 +8,7 @@ use crate::hittable::{HittableList, MovingSphere, Sphere};
 use crate::material::Material::{Dielectric, Lambertian, Metallic};
 use crate::material::{Diel, Lambert, Metal};
 use crate::perlin::NoiseType;
-use crate::texture::{Checker, Noise, SolidColor};
+use crate::texture::{Checker, ImageTexture, Noise, SolidColor};
 use crate::vec3::{Color, Point3, Vec3};
 
 /// Section 2.5: Book cover scene but with motion blur.
@@ -296,4 +296,45 @@ pub fn perlin_spheres<R: rand::Rng>(
         time1,
     );
     (cam, world)
+}
+
+/// Section 6.2: Load an image texture. In `ray_color`, only return attenuation.
+#[cfg(feature = "images")]
+pub fn earth<R: rand::Rng>(
+    _rng: &mut R,
+    img_w: u32,
+    img_h: u32,
+) -> Result<(Camera, HittableList), Box<dyn std::error::Error>> {
+    let earth_texture = ImageTexture::new("earthmap.jpg")?;
+    let globe = Arc::new(Sphere::new(
+        Point3::default(),
+        2.0,
+        Lambertian(Lambert::new(Arc::new(earth_texture))),
+    ));
+
+    let world = HittableList::new_from(globe);
+
+    let lookfrom = Point3::new(0.0, 0.0, 12.0);
+    let lookat = Point3::new_with(0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 20.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+
+    Ok((cam, world))
 }

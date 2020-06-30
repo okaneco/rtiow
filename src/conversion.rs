@@ -48,3 +48,19 @@ impl crate::vec3::Color {
         )
     }
 }
+
+/// Trait for fast conversion from uint to f64.
+pub trait IntoF64 {
+    /// Convert unsigned integer to f64.
+    fn into_f64(self) -> f64;
+}
+
+impl IntoF64 for u8 {
+    fn into_f64(self) -> f64 {
+        let comp_u = self as u64 + C52;
+        let comp_f = f64::from_bits(comp_u) - f64::from_bits(C52);
+        let max_u = core::u8::MAX as u64 + C52;
+        let max_f = (f64::from_bits(max_u) - f64::from_bits(C52)).recip();
+        comp_f * max_f
+    }
+}

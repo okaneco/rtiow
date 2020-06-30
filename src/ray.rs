@@ -56,7 +56,8 @@ pub fn ray_color<R: Rng>(rng: &mut R, r: &Ray, world: &dyn Hittable, max_depth: 
             .material
             .scatter(rng, r, &rec, &mut attenuation, &mut scattered)
         {
-            return attenuation * ray_color(rng, &scattered, world, max_depth - 1);
+            // return attenuation * ray_color(rng, &scattered, world, max_depth - 1);
+            return attenuation;
         }
     }
 

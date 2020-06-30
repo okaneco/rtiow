@@ -182,3 +182,65 @@ impl Texture for Noise {
         }
     }
 }
+
+/// Texture that holds image data.
+#[derive(Clone, Debug, Default)]
+pub struct ImageTexture {
+    /// Buffer of pixels.
+    data: Vec<u8>,
+    /// Width of image.
+    width: u32,
+    /// Height of image.
+    height: u32,
+    /// Number of bytes per pixel.
+    bytes_per_pixel: u32,
+    /// Number of bytes per line of image.
+    bytes_per_scanline: u32,
+}
+
+impl ImageTexture {
+    /// Create new `ImageTexture` from file.
+    pub fn new<P: AsRef<std::path::Path>>(filename: P) -> Result<Self, Box<dyn std::error::Error>> {
+        let bytes_per_pixel = 3;
+        let img = image::open(filename)?.to_rgb();
+        let (width, height) = img.dimensions();
+        let data = img.into_raw();
+
+        Ok(Self {
+            data,
+            width,
+            height,
+            bytes_per_pixel,
+            bytes_per_scanline: bytes_per_pixel * width,
+        })
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _p: &Point3) -> Color {
+        if self.data.is_empty() {
+            return Color::new(1.0, 0.0, 1.0);
+        }
+
+        let u = u.max(0.0).min(1.0);
+        let v = 1.0 - v.max(0.0).min(1.0);
+
+        let mut i = (u * f64::from(self.width)) as u32;
+        let mut j = (v * f64::from(self.height)) as u32;
+
+        if i >= self.width {
+            i = self.width - 1;
+        }
+        if j >= self.height {
+            j = self.height - 1;
+        }
+
+        let pixel = (j * self.bytes_per_scanline + i * self.bytes_per_pixel) as usize;
+
+        Color::new(
+            crate::conversion::IntoF64::into_f64(self.data[pixel]),
+            crate::conversion::IntoF64::into_f64(self.data[pixel + 1]),
+            crate::conversion::IntoF64::into_f64(self.data[pixel + 2]),
+        )
+    }
+}

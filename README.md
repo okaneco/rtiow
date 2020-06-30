@@ -121,6 +121,9 @@ Multiplying turbulence directly by the color as illustrated in the book
 ![perlin with turbluence direct](img/second/11-turbulence-direct.jpg)  
 **5.7** Adjusting the phase of turbulence, making a marble texture  
 ![perlin turbulent marble texture](img/second/12-marbled-texture.jpg)  
+**Chapter 6:** Using images as textures. Camera settings are default with 
+`lookfrom=(0.0, 0.0, 12.0)`  
+![earth on a sphere](img/second/13-earth.jpg)  
 
 
 <a name="restofyourlife"></a>
