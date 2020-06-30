@@ -2,11 +2,12 @@
 
 use std::sync::Arc;
 
+use crate::aarect::{AaRect, Plane};
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
-use crate::hittable::{HittableList, MovingSphere, Sphere};
-use crate::material::Material::{Dielectric, Lambertian, Metallic};
-use crate::material::{Diel, Lambert, Metal};
+use crate::hittable::{FlipFace, HittableList, MovingSphere, Sphere};
+use crate::material::Material::{Dielectric, DiffLight, Lambertian, Metallic};
+use crate::material::{Diel, DiffuseLight, Lambert, Metal};
 use crate::perlin::NoiseType;
 use crate::texture::{Checker, ImageTexture, Noise, SolidColor};
 use crate::vec3::{Color, Point3, Vec3};
@@ -337,4 +338,251 @@ pub fn earth<R: rand::Rng>(
     );
 
     Ok((cam, world))
+}
+
+/// Section 7.4: Turning objects into lights. Scene with a sphere and rectangle
+/// light.
+pub fn simple_light<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camera, HittableList) {
+    let mut world = HittableList::new();
+    let radius = 2.0;
+
+    let perlin_tex = Arc::new(Noise::new_with(1.0, NoiseType::Square, 1.0, 7, 10.0));
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Lambertian(Lambert::new(perlin_tex.clone())),
+    )));
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0.0, radius, 0.0),
+        radius,
+        Lambertian(Lambert::new(perlin_tex.clone())),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(4.0))));
+    world.add(Arc::new(Sphere::new(
+        Point3::new(0.0, 7.0, 0.0),
+        radius,
+        DiffLight(difflight.clone()),
+    )));
+    world.add(Arc::new(AaRect::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        DiffLight(difflight.clone()),
+        Plane::Xy,
+    )));
+
+    let lookfrom = Point3::new(26.0, 3.0, 6.0);
+    let lookat = Point3::new(0.0, 2.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 20.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+
+    (cam, world)
+}
+
+/// Section 7.6: Empty Cornell Box scene.
+pub fn naive_cornell_box<R: rand::Rng>(
+    _rng: &mut R,
+    img_w: u32,
+    img_h: u32,
+) -> (Camera, HittableList) {
+    let mut world = HittableList::new();
+
+    let red = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.65, 0.05, 0.05))));
+    let white = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.73, 0.73, 0.73))));
+    let green = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.12, 0.45, 0.15))));
+    let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(15.0))));
+
+    // Light
+    world.add(Arc::new(AaRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        DiffLight(difflight.clone()),
+        Plane::Xz,
+    )));
+
+    // Planes
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+        Plane::Yz,
+    )));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+        Plane::Yz,
+    )));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+        Plane::Xz,
+    )));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xz,
+    )));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xy,
+    )));
+
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 40.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+
+    (cam, world)
+}
+
+/// Section 7.7: Empty Cornell Box scene with adjusted normals.
+pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camera, HittableList) {
+    let mut world = HittableList::new();
+
+    let red = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.65, 0.05, 0.05))));
+    let white = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.73, 0.73, 0.73))));
+    let green = Lambertian(Lambert::new(Arc::new(SolidColor::new(0.12, 0.45, 0.15))));
+    let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(15.0))));
+
+    // Light
+    world.add(Arc::new(AaRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        DiffLight(difflight.clone()),
+        Plane::Xz,
+    )));
+
+    // Planes
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+        Plane::Yz,
+    )))));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+        Plane::Yz,
+    )));
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xz,
+    )))));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+        Plane::Xz,
+    )));
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xy,
+    )))));
+
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 40.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+
+    (cam, world)
 }

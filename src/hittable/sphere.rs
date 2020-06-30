@@ -11,7 +11,7 @@ pub struct Sphere {
     /// Radius of sphere.
     pub radius: f64,
     /// Material of sphere.
-    pub material: Material,
+    pub material: std::sync::Arc<Material>,
 }
 
 impl Sphere {
@@ -20,7 +20,7 @@ impl Sphere {
         Self {
             center,
             radius,
-            material,
+            material: std::sync::Arc::new(material),
         }
     }
 }
@@ -99,7 +99,7 @@ pub struct MovingSphere {
     /// Radius of sphere.
     pub radius: f64,
     /// Material of sphere.
-    pub material: Material,
+    pub material: std::sync::Arc<Material>,
 }
 
 impl MovingSphere {
@@ -118,7 +118,7 @@ impl MovingSphere {
             time0,
             time1,
             radius,
-            material,
+            material: std::sync::Arc::new(material),
         }
     }
 

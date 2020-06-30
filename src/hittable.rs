@@ -14,7 +14,7 @@ pub struct HitRecord {
     /// Normal direction of the hit.
     pub normal: Vec3,
     /// Material of the object that was struck.
-    pub material: Material,
+    pub material: std::sync::Arc<Material>,
     /// Where along the `Ray` the object was struck.
     pub t: f64,
     /// U surface coordinate of the object.
@@ -46,8 +46,10 @@ pub trait Hittable {
     fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool;
 }
 
+mod flip_face;
 mod list;
 mod sphere;
 
+pub use flip_face::FlipFace;
 pub use list::HittableList;
 pub use sphere::{get_sphere_uv, MovingSphere, Sphere};

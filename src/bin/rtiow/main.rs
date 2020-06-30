@@ -9,6 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let samples: u32 = 100;
     let max_depth = 50;
+    let background = rtiow::vec3::Color::new_with(0.0);
 
     // Cli arg parsing. `-- image0.ppm samples width height`.
     let mut args = std::env::args().skip(1);
@@ -30,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut rng = rand::thread_rng();
 
     // Create world and camera
-    let (cam, world) = earth(&mut rng, img_w, img_h)?;
+    let (cam, world) = cornell_box(&mut rng, img_w, img_h);
 
     // Raytrace!
     /* Single thread */
@@ -42,7 +43,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     /* rayon PPM output */
     let now = std::time::Instant::now();
-    rtiow::render::run_threaded_ppm(&mut w, img_w, img_h, samples, max_depth, &world, &cam)?;
+    rtiow::render::run_threaded_ppm(
+        &mut w,
+        img_w,
+        img_h,
+        samples,
+        max_depth,
+        &world,
+        &cam,
+        &background,
+    )?;
     eprintln!("\nDone in {:.2?}.", std::time::Instant::now() - now);
 
     Ok(())

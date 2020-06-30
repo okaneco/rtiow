@@ -19,8 +19,7 @@ Completed books are tagged as a release.
 
 I believe I've stayed close to the spirit of the book. I added multi-threading
 with `rayon` for the last render of the first book. All renders after that were
-multi-threaded. Some changes were made due to architecture or not requiring the
-use of `std::sync::Arc` where `shared_ptr` was used in the book.
+multi-threaded.
 
 <a name="oneweekend"></a>
 ## *Ray Tracing in One Weekend*
@@ -92,39 +91,60 @@ I made an enum for the Perlin noise to allow for selection over the several
 types made over the course of the chapter: trilinear, unfiltered,
 net/camouflage, smooth, and marble.
 
+<a name="chapter2"></a>
 **Chapter 2:** Bouncing Spheres, simulating motion blur  
 ![bouncing spheres](img/second/00-bouncing-spheres.jpg)  
-**Chapter 4:** Added a checker texture to the ground, implemented bounding
-volume hierarchies for massive render speedup in some scenes, 400 samples  
+<a name="chapter4"></a>
+**Chapter 4:** Added a checker texture to the ground,
+implemented bounding volume hierarchies for massive render speedup in some
+scenes, 400 samples  
 ![checkerboard floor](img/second/01-checker-world.jpg)  
 Two checker spheres  
 ![checkered spheres](img/second/02-checker-spheres.jpg)  
+<a name="chapter5"></a>
 **Chapter 5:** Hashed Perlin noise  
 ![perlin noise squares](img/second/03-perlin-spheres.jpg)  
 Playing with the previous scene, added motion blur to one sphere  
 ![perlin square with motion blur](img/second/04-perlin-spheres-motion.jpg)  
+<a name="5.2"></a>
 **5.2:** Perlin noise with trilinear interpolation.  
 ![perlin noise with trilinear filter](img/second/05-trilinear.jpg)  
+<a name="5.3"></a>
 **5.3:** Trilinear filtering with cubic Hermite  
 ![perlin trilinear filter smoothed](img/second/06-hermitian-smoothing.jpg)  
+<a name="5.4"></a>
 **5.4:** High frequency scaling for the noise, this is a scale of 20  
 ![perlin noise with higher frequency](img/second/07-frequency-scale-20.jpg)  
 The book example seems to be a frequency of 4, determined through trial and
 error  
 ![perlin with frequency to match book](img/second/08-frequency-scale-04.jpg)  
+<a name="5.5"></a>
 **5.5** Perlin noise with random unit vectors on lattice points  
 ![perlin with random unit vectors](img/second/09-random-vectors-lattice-points.jpg)  
+<a name="5.6"></a>
 **5.6** Substituting turbulence in for the noise function, not the intended
 result as in the book  
 ![perlin with turbluence](img/second/10-turbulence-substitution.jpg)  
 Multiplying turbulence directly by the color as illustrated in the book  
 ![perlin with turbluence direct](img/second/11-turbulence-direct.jpg)  
+<a name="5.7"></a>
 **5.7** Adjusting the phase of turbulence, making a marble texture  
 ![perlin turbulent marble texture](img/second/12-marbled-texture.jpg)  
-**Chapter 6:** Using images as textures. Camera settings are default with 
-`lookfrom=(0.0, 0.0, 12.0)`  
+<a name="chapter6"></a>
+**Chapter 6:** Using images as textures  
 ![earth on a sphere](img/second/13-earth.jpg)  
-
+<a name="chapter7"></a>
+**Chapter 7:** Turning objects into lights, small rectangle light  
+![rectangle light](img/second/14-rectangle-light.jpg)  
+Adding a sphere to the scene, 1000 samples  
+![sphere light](img/second/15-sphere-light.jpg)  
+<a name="7.6"></a>
+Noisy, empty Cornell box. Aspect ratio changed to 1:1. My result doesn't look
+like the Cornell box in the book which is very shadowy.  
+![sphere light](img/second/16-empty-box.jpg)  
+Added flipped face material for less noise with Aarect planes. There doesn't
+seem to be much a difference, I'm not sure where the discrepancy lies.  
+![sphere light](img/second/17-flip-face.jpg)  
 
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*

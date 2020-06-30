@@ -55,6 +55,21 @@ impl Camera {
         }
     }
 
+    /// Create a new default camera from an aspect ratio.
+    pub fn new_with(img_w: u32, img_h: u32) -> Self {
+        Camera::new(
+            Point3::new_with(0.0),
+            Point3::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            90.0,
+            f64::from(img_w) * f64::from(img_h).recip(),
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+        )
+    }
+
     /// Create a ray from the camera.
     pub fn get_ray<R: rand::Rng>(&self, rng: &mut R, s: f64, t: f64) -> Ray {
         let rd = self.lens_radius * Vec3::random_in_unit_circle(rng);

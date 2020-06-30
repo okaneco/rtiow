@@ -16,6 +16,8 @@ pub enum Material {
     Metallic(Metal),
     /// Dielectric material.
     Dielectric(Diel),
+    /// Diffuse light material.
+    DiffLight(Arc<DiffuseLight>),
 }
 
 impl core::default::Default for Material {
@@ -70,6 +72,15 @@ impl Material {
                 }
                 true
             }
+            Material::DiffLight(_) => false,
+        }
+    }
+
+    /// Color emitted by the material.
+    pub fn emitted(&self, u: f64, v: f64, p: &crate::vec3::Point3) -> Color {
+        match self {
+            Material::DiffLight(diff) => diff.emit.value(u, v, p),
+            _ => Color::new_with(0.0),
         }
     }
 }
@@ -123,6 +134,20 @@ impl Diel {
     /// Create a new `Diel` material.
     pub fn new(refraction_index: f64) -> Self {
         Self { refraction_index }
+    }
+}
+
+#[derive(Clone)]
+/// Diffuse emitting light.
+pub struct DiffuseLight {
+    /// Diffuse emitting texture.
+    pub emit: Arc<dyn Texture + Send + Sync>,
+}
+
+impl DiffuseLight {
+    /// Create a new diffuse light.
+    pub fn new(emit: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { emit }
     }
 }
 

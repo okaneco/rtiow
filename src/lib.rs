@@ -3,6 +3,7 @@
 #![allow(clippy::suspicious_arithmetic_impl, clippy::suspicious_op_assign_impl)]
 
 pub mod aabb;
+pub mod aarect;
 pub mod bvh;
 pub mod camera;
 pub mod conversion;
