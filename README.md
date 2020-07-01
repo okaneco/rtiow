@@ -1,3 +1,4 @@
+<a name="top"></a>
 # rtiow - Ray Tracing in One Weekend
 
 ![book cover](img/first/18-final-scene.jpg)  
@@ -7,7 +8,7 @@ https://raytracing.github.io/
 Completed books are tagged as a release.
 
 - [x] - *Ray Tracing in One Weekend*
-- [ ] - *The Next Week*
+- [x] - *The Next Week*
 - [ ] - *The Rest of Your Life*
 
 ### Table of Contents
@@ -17,20 +18,20 @@ Completed books are tagged as a release.
 
 ### Notes
 
-I believe I've stayed close to the spirit of the book. I added multi-threading
-with `rayon` for the last render of the first book. All renders after that were
-multi-threaded.
+I believe I've stayed close to the spirit of the book while still writing Rust.
+Multi-threading was trivially added with `rayon` for the last render of the
+first book. All renders after that were multi-threaded.
 
 <a name="oneweekend"></a>
 ## *Ray Tracing in One Weekend*
 
 A primitive command line interface exists, scenes and threading need to be
-adjusted by recompiling. Each flag is optional. It defaults to 100 samples and
-384 pixel width, height will be calculated with an aspect ratio of 16:9 if not
-specified. Arbitrary aspect ratios are supported.
+adjusted by recompiling. Each flag is optional. Default values are 100 samples
+and 384 pixel width, height will be calculated with an aspect ratio of 16:9 if
+not specified. Arbitrary aspect ratios are supported.
 
 ```
-cargo run --release -- [filename.ppm] [samples] [width] [height]
+cargo run --release -- [filename.ppm] [samples] [width] [height] [seed]
 ```
 
 All images were done with 100 samples and 50 bounces.
@@ -74,6 +75,7 @@ Depth of field blur is added
 Final scene as on the cover of the book, with some personal touches added  
 ![final scene](img/first/18-final-scene.jpg)  
 
+[Back to top](#top)
 
 <a name="nextweek"></a>
 ## *The Next Week*
@@ -87,9 +89,9 @@ However, due to the nature of the book, enough incremental churn occurs that
 it's not convenient to keep every camera, world, and rendering combination
 pictured here.
 
-I made an enum for the Perlin noise to allow for selection over the several
-types made over the course of the chapter: trilinear, unfiltered,
-net/camouflage, smooth, and marble.
+I made an enum for the Perlin noise to allow for selection from any of the types
+made over the course of the chapter: trilinear, unfiltered, net/camouflage,
+smooth, and marble (with turbulence).
 
 <a name="chapter2"></a>
 **Chapter 2:** Bouncing Spheres, simulating motion blur  
@@ -97,7 +99,7 @@ net/camouflage, smooth, and marble.
 <a name="chapter4"></a>
 **Chapter 4:** Added a checker texture to the ground,
 implemented bounding volume hierarchies for massive render speedup in some
-scenes, 400 samples  
+scenes - 400 samples  
 ![checkerboard floor](img/second/01-checker-world.jpg)  
 Two checker spheres  
 ![checkered spheres](img/second/02-checker-spheres.jpg)  
@@ -136,23 +138,32 @@ Multiplying turbulence directly by the color as illustrated in the book
 <a name="chapter7"></a>
 **Chapter 7:** Turning objects into lights, small rectangle light  
 ![rectangle light](img/second/14-rectangle-light.jpg)  
-Adding a sphere to the scene, 1000 samples  
+Adding a sphere to the scene - 1,000 samples  
 ![sphere light](img/second/15-sphere-light.jpg)  
 <a name="7.6"></a>
-Noisy, empty Cornell box. Aspect ratio changed to 1:1. My result doesn't look
-like the Cornell box in the book which is very shadowy  
+Empty Cornell box. Aspect ratio changed to 1:1. My result doesn't appear
+to have flipped normals like in the book - 1,000 samples  
 ![sphere light](img/second/16-empty-box.jpg)  
-Added flipped face material for less noise with Aarect planes. There doesn't
-seem to be much a difference, I'm not sure where the discrepancy lies  
+Added flipped face material for less noise with axis-aligned planes - 1,000
+samples  
 ![sphere light](img/second/17-flip-face.jpg)  
-Cornell box, now with blocks but not rotated, 1000 samples  
+Cornell box, now with blocks but not rotated - 1,000 samples  
 ![sphere light](img/second/18-cornell-blocks.jpg)  
-Standard Cornell box scene with rotated boxes, 1000 samples  
+Standard Cornell box scene with rotated boxes - 1,000 samples  
 ![cornell box scene](img/second/19-cornell-rotated.jpg)  
-Cornell with blocks of smoke, 1000 samples  
+Cornell with blocks of smoke - 1,000 samples  
 ![cornell smoke scene](img/second/20-cornell-smoke.jpg)  
+Final scene, 400 samples. The scene's Perlin noise is not reproducible from
+the instructions given in the book, there are some artifacts due to lack of
+samples but render times are very long. I spent a few hours trying to figure out
+why my result didn't look like the book. We do have nice volumetric fog and
+caustics in the glass material though.  
+See: https://github.com/RayTracing/raytracing.github.io/issues/425   
+![testing everything](img/second/21-final-scene.jpg)  
 
-
+[Back to top](#top)
 
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*
+
+[Back to top](#top)

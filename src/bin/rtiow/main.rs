@@ -1,5 +1,7 @@
 #![warn(rust_2018_idioms, unsafe_code)]
 
+use rand::SeedableRng;
+
 use rtiow::scene::second::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -9,9 +11,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let samples: u32 = 100;
     let max_depth = 50;
+    let seed = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)?
+        .as_secs() as u64;
     let background = rtiow::vec3::Color::new_with(0.0);
 
-    // Cli arg parsing. `-- image0.ppm samples width height`.
+    // Cli arg parsing. `-- image0.ppm samples width height seed`.
     let mut args = std::env::args().skip(1);
     let filename = &args.next().unwrap_or_else(|| "image0.ppm".to_owned());
     let samples = args
@@ -27,11 +32,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or_else(|_| (f64::from(img_w) * aspect_ratio.recip()) as u32)
         },
     );
+    let seed = args
+        .next()
+        .map_or_else(|| seed, |v| v.parse().unwrap_or_else(|_| seed));
     let mut w = std::io::BufWriter::new(std::fs::File::create(&filename)?);
-    let mut rng = rand::thread_rng();
+    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
 
     // Create world and camera
-    let (cam, world) = cornell_smoke(&mut rng, img_w, img_h);
+    let (cam, world) = final_scene(&mut rng, img_w, img_h)?;
 
     // Raytrace!
     /* Single thread */

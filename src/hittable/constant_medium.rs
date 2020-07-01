@@ -28,7 +28,7 @@ impl ConstantMedium {
             phase_function: Arc::new(Material::Iso(crate::material::Isotropic::new(
                 phase_function,
             ))),
-            neg_inv_density: -1.0 / neg_inv_density,
+            neg_inv_density: -1.0 * neg_inv_density.recip(),
         }
     }
 }

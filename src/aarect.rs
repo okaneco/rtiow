@@ -91,7 +91,7 @@ impl Hittable for AaRect {
                 true
             }
             Plane::Xz => {
-                let t = (self.k - r.origin().y()) / r.direction().y();
+                let t = (self.k - r.origin().y()) * r.direction().y().recip();
                 if t < t_min || t > t_max {
                     return false;
                 }
@@ -113,7 +113,7 @@ impl Hittable for AaRect {
                 true
             }
             Plane::Yz => {
-                let t = (self.k - r.origin().x()) / r.direction().x();
+                let t = (self.k - r.origin().x()) * r.direction().x().recip();
                 if t < t_min || t > t_max {
                     return false;
                 }
@@ -124,8 +124,8 @@ impl Hittable for AaRect {
                     return false;
                 }
 
-                rec.u = (y - self.a0) * (self.a1 - self.a0);
-                rec.v = (z - self.b0) * (self.b1 - self.b0);
+                rec.u = (y - self.a0) * (self.a1 - self.a0).recip();
+                rec.v = (z - self.b0) * (self.b1 - self.b0).recip();
                 rec.t = t;
                 let outward_normal = Vec3::new(1.0, 0.0, 0.0);
                 rec.set_face_normal(r, &outward_normal);

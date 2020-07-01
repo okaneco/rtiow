@@ -110,7 +110,7 @@ impl MovingSphere {
         time0: f64,
         time1: f64,
         radius: f64,
-        material: Material,
+        material: std::sync::Arc<Material>,
     ) -> Self {
         Self {
             center0,
@@ -118,7 +118,7 @@ impl MovingSphere {
             time0,
             time1,
             radius,
-            material: std::sync::Arc::new(material),
+            material,
         }
     }
 

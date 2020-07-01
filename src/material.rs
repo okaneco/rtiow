@@ -17,7 +17,7 @@ pub enum Material {
     /// Dielectric material.
     Dielectric(Diel),
     /// Diffuse light material.
-    DiffLight(Arc<DiffuseLight>),
+    DiffLight(DiffuseLight),
     /// Isotropic material.
     Iso(Isotropic),
 }
@@ -47,7 +47,11 @@ impl Material {
             }
             Material::Metallic(mat) => {
                 let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-                *scattered = Ray::new(rec.p, reflected, r_in.time());
+                *scattered = Ray::new(
+                    rec.p,
+                    reflected + mat.fuzz * Vec3::random_in_unit_sphere(rng),
+                    r_in.time(),
+                );
                 *attenuation = mat.albedo;
                 scattered.direction().dot(&rec.normal) > 0.0
             }
@@ -119,12 +123,17 @@ impl core::default::Default for Lambert {
 pub struct Metal {
     /// Base color of the material.
     pub albedo: Color,
+    /// Fuzz factor of the reflection.
+    pub fuzz: f64,
 }
 
 impl Metal {
     /// Create a new `Metal` material.
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(albedo: Color, fuzz: f64) -> Self {
+        Self {
+            albedo,
+            fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
+        }
     }
 }
 

@@ -26,12 +26,12 @@ pub fn base_metal_lambert(img_w: u32, img_h: u32) -> (crate::camera::Camera, Hit
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2))),
+        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Metallic(Metal::new(Color::new(0.8, 0.8, 0.8))),
+        Metallic(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0)),
     )));
 
     let cam = Camera::new(
@@ -70,7 +70,7 @@ pub fn all_refract() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Metallic(Metal::new(Color::new(0.8, 0.8, 0.8))),
+        Metallic(Metal::new(Color::new(0.8, 0.8, 0.8), 0.0)),
     )));
     world
 }
@@ -92,7 +92,7 @@ pub fn sometimes_refract() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2))),
+        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0)),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
@@ -119,7 +119,7 @@ pub fn bubble() -> HittableList {
     world.add(Arc::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2))),
+        Metallic(Metal::new(Color::new(0.8, 0.6, 0.2), 0.3)),
     )));
     world.add(Arc::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
@@ -193,7 +193,10 @@ pub fn final_scene<R: rand::Rng>(
                 world.add(Arc::new(Sphere::new(
                     center,
                     radius,
-                    Metallic(Metal::new(Color::random_range(rng, 0.3, 1.0))),
+                    Metallic(Metal::new(
+                        Color::random_range(rng, 0.3, 1.0),
+                        rng.gen_range(0.0, 0.5),
+                    )),
                 )));
             } else {
                 // glass
@@ -221,7 +224,7 @@ pub fn final_scene<R: rand::Rng>(
     world.add(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
-        Metallic(Metal::new(Color::new(0.7, 0.6, 0.5))),
+        Metallic(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)),
     )));
 
     let lookfrom = Point3::new(13.0, 2.0, 3.0);

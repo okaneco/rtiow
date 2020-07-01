@@ -92,9 +92,9 @@ pub struct Noise {
 impl Noise {
     /// Create a new Perlin noise texture.
     pub fn new(
-        a: f64,
-        b: f64,
-        c: f64,
+        red: f64,
+        green: f64,
+        blue: f64,
         noise_type: NoiseType,
         scale: f64,
         turb_depth: u32,
@@ -102,7 +102,7 @@ impl Noise {
     ) -> Self {
         Self {
             noise: crate::perlin::Perlin::new(),
-            albedo: Color::new(a, b, c),
+            albedo: Color::new(red, green, blue),
             noise_type,
             scale,
             turb_depth,
@@ -113,7 +113,7 @@ impl Noise {
     /// Create a new Perlin noise texture with the same value for all color
     /// fields.
     pub fn new_with(
-        a: f64,
+        color: f64,
         noise_type: NoiseType,
         scale: f64,
         turb_depth: u32,
@@ -121,7 +121,7 @@ impl Noise {
     ) -> Self {
         Self {
             noise: crate::perlin::Perlin::new(),
-            albedo: Color::new_with(a),
+            albedo: Color::new_with(color),
             noise_type,
             scale,
             turb_depth,
