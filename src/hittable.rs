@@ -47,12 +47,14 @@ pub trait Hittable {
 }
 
 mod box_prim;
+mod constant_medium;
 mod flip_face;
 mod list;
 mod sphere;
 mod translate;
 
 pub use box_prim::BoxPrim;
+pub use constant_medium::ConstantMedium;
 pub use flip_face::FlipFace;
 pub use list::HittableList;
 pub use sphere::{get_sphere_uv, MovingSphere, Sphere};

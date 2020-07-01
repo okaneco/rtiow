@@ -149,6 +149,9 @@ Cornell box, now with blocks but not rotated, 1000 samples
 ![sphere light](img/second/18-cornell-blocks.jpg)  
 Standard Cornell box scene with rotated boxes, 1000 samples  
 ![cornell box scene](img/second/19-cornell-rotated.jpg)  
+Cornell with blocks of smoke, 1000 samples  
+![cornell smoke scene](img/second/20-cornell-smoke.jpg)  
+
 
 
 <a name="restofyourlife"></a>

@@ -79,7 +79,7 @@ impl BoxPrim {
             p0.z(),
             p1.z(),
             p0.x(),
-            ptr.clone(),
+            ptr,
             Plane::Yz,
         )))));
 

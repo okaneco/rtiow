@@ -18,6 +18,8 @@ pub enum Material {
     Dielectric(Diel),
     /// Diffuse light material.
     DiffLight(Arc<DiffuseLight>),
+    /// Isotropic material.
+    Iso(Isotropic),
 }
 
 impl core::default::Default for Material {
@@ -70,6 +72,11 @@ impl Material {
                     let refracted = Vec3::refract(&unit_dir, &rec.normal, etai_over_etat);
                     *scattered = Ray::new(rec.p, refracted, r_in.time());
                 }
+                true
+            }
+            Material::Iso(mat) => {
+                *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(rng), r_in.time());
+                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
                 true
             }
             Material::DiffLight(_) => false,
@@ -151,6 +158,19 @@ impl DiffuseLight {
     }
 }
 
+/// Isotropic scattering material.
+#[derive(Clone)]
+pub struct Isotropic {
+    /// Based texture of the material.
+    pub albedo: Arc<dyn Texture + Send + Sync>,
+}
+
+impl Isotropic {
+    /// Create new isotropic material.
+    pub fn new(albedo: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { albedo }
+    }
+}
 /// Schlick approximation for reflectivity.
 #[inline]
 pub fn schlick(cos: f64, ref_idx: f64) -> f64 {

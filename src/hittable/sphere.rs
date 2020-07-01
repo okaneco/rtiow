@@ -81,7 +81,7 @@ impl Hittable for Sphere {
             min: self.center - Vec3::new_with(self.radius),
             max: self.center + Vec3::new_with(self.radius),
         };
-        return true;
+        true
     }
 }
 
@@ -172,6 +172,6 @@ impl Hittable for MovingSphere {
             max: self.center(t1) + Vec3::new_with(self.radius),
         };
         *output_box = crate::aabb::Aabb::surrounding_box(&box0, &box1);
-        return true;
+        true
     }
 }

@@ -5,7 +5,9 @@ use std::sync::Arc;
 use crate::aarect::{AaRect, Plane};
 use crate::bvh::BvhNode;
 use crate::camera::Camera;
-use crate::hittable::{BoxPrim, FlipFace, HittableList, MovingSphere, RotateY, Sphere, Translate};
+use crate::hittable::{
+    BoxPrim, ConstantMedium, FlipFace, HittableList, MovingSphere, RotateY, Sphere, Translate,
+};
 use crate::material::Material::{Dielectric, DiffLight, Lambertian, Metallic};
 use crate::material::{Diel, DiffuseLight, Lambert, Metal};
 use crate::perlin::NoiseType;
@@ -272,7 +274,7 @@ pub fn perlin_spheres<R: rand::Rng>(
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, 2.0, 0.0),
         2.0,
-        Lambertian(Lambert::new(perlin_tex.clone())),
+        Lambertian(Lambert::new(perlin_tex)),
     )));
 
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -355,7 +357,7 @@ pub fn simple_light<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Came
     world.add(Arc::new(Sphere::new(
         Point3::new(0.0, radius, 0.0),
         radius,
-        Lambertian(Lambert::new(perlin_tex.clone())),
+        Lambertian(Lambert::new(perlin_tex)),
     )));
 
     let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(4.0))));
@@ -370,7 +372,7 @@ pub fn simple_light<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Came
         1.0,
         3.0,
         -2.0,
-        Arc::new(DiffLight(difflight.clone())),
+        Arc::new(DiffLight(difflight)),
         Plane::Xy,
     )));
 
@@ -425,7 +427,7 @@ pub fn naive_cornell_box<R: rand::Rng>(
         227.0,
         332.0,
         554.0,
-        Arc::new(DiffLight(difflight.clone())),
+        Arc::new(DiffLight(difflight)),
         Plane::Xz,
     )));
 
@@ -436,7 +438,7 @@ pub fn naive_cornell_box<R: rand::Rng>(
         0.0,
         555.0,
         555.0,
-        green.clone(),
+        green,
         Plane::Yz,
     )));
     world.add(Arc::new(AaRect::new(
@@ -445,7 +447,7 @@ pub fn naive_cornell_box<R: rand::Rng>(
         0.0,
         555.0,
         0.0,
-        red.clone(),
+        red,
         Plane::Yz,
     )));
     world.add(Arc::new(AaRect::new(
@@ -472,7 +474,7 @@ pub fn naive_cornell_box<R: rand::Rng>(
         0.0,
         555.0,
         555.0,
-        white.clone(),
+        white,
         Plane::Xy,
     )));
 
@@ -523,7 +525,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         227.0,
         332.0,
         554.0,
-        Arc::new(DiffLight(difflight.clone())),
+        Arc::new(DiffLight(difflight)),
         Plane::Xz,
     )));
 
@@ -534,7 +536,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         0.0,
         555.0,
         555.0,
-        green.clone(),
+        green,
         Plane::Yz,
     )))));
     world.add(Arc::new(AaRect::new(
@@ -543,7 +545,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         0.0,
         555.0,
         0.0,
-        red.clone(),
+        red,
         Plane::Yz,
     )));
     world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
@@ -574,6 +576,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
         Plane::Xy,
     )))));
 
+    // Boxes
     let box1 = Arc::new(BoxPrim::new(
         &Point3::new_with(0.0),
         &Point3::new(165.0, 330.0, 165.0),
@@ -581,7 +584,7 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
     ));
 
     let box1 = Translate::new(
-        Arc::new(RotateY::new(box1.clone(), 15.0, 0.0, 1.0)),
+        Arc::new(RotateY::new(box1, 15.0, 0.0, 1.0)),
         Vec3::new(265.0, 0.0, 295.0),
     );
     world.add(Arc::new(box1));
@@ -589,13 +592,143 @@ pub fn cornell_box<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camer
     let box2 = Arc::new(BoxPrim::new(
         &Point3::new_with(0.0),
         &Point3::new_with(165.0),
-        white.clone(),
+        white,
     ));
     let box2 = Translate::new(
-        Arc::new(RotateY::new(box2.clone(), -18.0, 0.0, 1.0)),
+        Arc::new(RotateY::new(box2, -18.0, 0.0, 1.0)),
         Vec3::new(130.0, 0.0, 65.0),
     );
     world.add(Arc::new(box2));
+
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let vfov = 40.0;
+    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
+    let focus_dist = 10.0;
+    let aperture = 0.0;
+    let time0 = 0.0;
+    let time1 = 1.0;
+
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        time0,
+        time1,
+    );
+
+    (cam, world)
+}
+
+/// Section 9.2: Cornell box scene with smoke and fog volumes.
+pub fn cornell_smoke<R: rand::Rng>(_rng: &mut R, img_w: u32, img_h: u32) -> (Camera, HittableList) {
+    let mut world = HittableList::new();
+
+    let red = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let white = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.73, 0.73, 0.73,
+    )))));
+    let green = Arc::new(Lambertian(Lambert::new(Arc::new(SolidColor::new(
+        0.12, 0.45, 0.15,
+    )))));
+    let difflight = Arc::new(DiffuseLight::new(Arc::new(SolidColor::new_with(7.0))));
+
+    // Light
+    world.add(Arc::new(AaRect::new(
+        113.0,
+        443.0,
+        127.0,
+        432.0,
+        554.0,
+        Arc::new(DiffLight(difflight)),
+        Plane::Xz,
+    )));
+
+    // Planes
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green,
+        Plane::Yz,
+    )))));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red,
+        Plane::Yz,
+    )));
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xz,
+    )))));
+    world.add(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+        Plane::Xz,
+    )));
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+        Plane::Xy,
+    )))));
+
+    // Boxes
+    let box1 = Arc::new(BoxPrim::new(
+        &Point3::new_with(0.0),
+        &Point3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+    let box1 = Translate::new(
+        Arc::new(RotateY::new(box1, 15.0, 0.0, 1.0)),
+        Vec3::new(265.0, 0.0, 295.0),
+    );
+
+    let box2 = Arc::new(BoxPrim::new(
+        &Point3::new_with(0.0),
+        &Point3::new_with(165.0),
+        white,
+    ));
+    let box2 = Translate::new(
+        Arc::new(RotateY::new(box2, -18.0, 0.0, 1.0)),
+        Vec3::new(130.0, 0.0, 65.0),
+    );
+
+    world.add(Arc::new(ConstantMedium::new(
+        Arc::new(box1),
+        Arc::new(SolidColor::new_with(0.0)),
+        0.01,
+    )));
+    world.add(Arc::new(ConstantMedium::new(
+        Arc::new(box2),
+        Arc::new(SolidColor::new_with(1.0)),
+        0.01,
+    )));
 
     let lookfrom = Point3::new(278.0, 278.0, -800.0);
     let lookat = Point3::new(278.0, 278.0, 0.0);

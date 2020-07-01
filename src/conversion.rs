@@ -38,7 +38,7 @@ impl IntoU8 for f64 {
 
 impl crate::vec3::Color {
     /// Convert a float RGB color into u8 with gamma correction.
-    pub fn into_u8_color(&self, samples: f64) -> crate::vec3::ColorU8 {
+    pub fn into_u8_color(self, samples: f64) -> crate::vec3::ColorU8 {
         let scale = samples.recip();
 
         crate::vec3::ColorU8(
