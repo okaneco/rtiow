@@ -2,7 +2,7 @@
 
 use rand::SeedableRng;
 
-use rtiow::scene::first::*;
+use rtiow::scene::second::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize values for the image output
@@ -11,11 +11,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let samples: u32 = 100;
     let max_depth = 50;
-    let seed: u64 = std::time::SystemTime::now()
+    let seed = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)?
-        .as_secs();
+        .as_secs() as u64;
+    let background = rtiow::vec3::Color::new_with(0.0);
 
-    // Cli arg parsing. `-- image0.ppm samples width height`.
+    // Cli arg parsing. `-- image0.ppm samples width height seed`.
     let mut args = std::env::args().skip(1);
     let filename = &args.next().unwrap_or_else(|| "image0.ppm".to_owned());
     let samples = args
@@ -31,33 +32,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or_else(|_| (f64::from(img_w) * aspect_ratio.recip()) as u32)
         },
     );
+    let seed = args
+        .next()
+        .map_or_else(|| seed, |v| v.parse().unwrap_or_else(|_| seed));
     let mut w = std::io::BufWriter::new(std::fs::File::create(&filename)?);
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
 
     // Create world and camera
-
-    let world = final_scene(&mut rng);
-
-    let lookfrom = rtiow::vec3::Point3::new(13.0, 2.0, 3.0);
-    let lookat = rtiow::vec3::Point3::new(0.0, 0.0, 0.0);
-    let vup = rtiow::vec3::Vec3::new(0.0, 1.0, 0.0);
-    let vfov = 20.0;
-    let aspect_ratio = f64::from(img_w) * f64::from(img_h).recip();
-    let focus_dist = 10.0;
-    let aperture = 0.0;
-
-    let cam = rtiow::camera::Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        vfov,
-        aspect_ratio,
-        aperture,
-        focus_dist,
-    );
-
-    // let world = sometimes_refract();
-    // let cam = rtiow::camera::Camera::default();
+    let (cam, world) = final_scene(&mut rng, img_w, img_h)?;
 
     // Raytrace!
     /* Single thread */
@@ -69,7 +51,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     /* rayon PPM output */
     let now = std::time::Instant::now();
-    rtiow::render::run_threaded_ppm(&mut w, img_w, img_h, samples, max_depth, &world, &cam)?;
+    rtiow::render::run_threaded_ppm(
+        &mut w,
+        img_w,
+        img_h,
+        samples,
+        max_depth,
+        &world,
+        &cam,
+        &background,
+    )?;
     eprintln!("\nDone in {:.2?}.", std::time::Instant::now() - now);
 
     Ok(())

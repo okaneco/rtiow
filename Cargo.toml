@@ -1,19 +1,29 @@
 [package]
 name = "rtiow"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["okaneco <47607823+okaneco@users.noreply.github.com>"]
 edition = "2018"
 readme = "README.md"
 license = "MIT"
-description = "Rust implementation of Raytracing in One Weekend."
+description = "Rust implementation of Raytracing in One Weekend and Raytracing the Next Week."
 
 [features]
 default = [
+    "images",
     "threads",
 ]
 
-# enable threading support
+# Support for opening and writing images
+images = ["image"]
+
+# Enable threading support
 threads = ["rayon"]
+
+[dependencies.image]
+version = "0.23"
+default-features = false
+features = ["jpeg"]
+optional = true
 
 [dependencies.rand]
 version = "0.7"

@@ -1,11 +1,14 @@
 //! Materials that can be struck by a ray and how they affect light.
 
+use std::sync::Arc;
+
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::texture::{SolidColor, Texture};
 use crate::vec3::{Color, Vec3};
 
 /// Type of material.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone)]
 pub enum Material {
     /// Diffuse material.
     Lambertian(Lambert),
@@ -13,6 +16,10 @@ pub enum Material {
     Metallic(Metal),
     /// Dielectric material.
     Dielectric(Diel),
+    /// Diffuse light material.
+    DiffLight(DiffuseLight),
+    /// Isotropic material.
+    Iso(Isotropic),
 }
 
 impl core::default::Default for Material {
@@ -34,13 +41,17 @@ impl Material {
         match self {
             Material::Lambertian(mat) => {
                 let scatter_dir = rec.normal + Vec3::random_unit_vector(rng);
-                *scattered = Ray::new(rec.p, scatter_dir);
-                *attenuation = mat.albedo;
+                *scattered = Ray::new(rec.p, scatter_dir, r_in.time());
+                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
                 true
             }
             Material::Metallic(mat) => {
                 let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-                *scattered = Ray::new(rec.p, reflected);
+                *scattered = Ray::new(
+                    rec.p,
+                    reflected + mat.fuzz * Vec3::random_in_unit_sphere(rng),
+                    r_in.time(),
+                );
                 *attenuation = mat.albedo;
                 scattered.direction().dot(&rec.normal) > 0.0
             }
@@ -60,47 +71,74 @@ impl Material {
                     || rng.gen::<f64>() < schlick(cos_theta, etai_over_etat)
                 {
                     let reflected = Vec3::reflect(&unit_dir, &rec.normal);
-                    *scattered = Ray::new(rec.p, reflected);
+                    *scattered = Ray::new(rec.p, reflected, r_in.time());
                 } else {
                     let refracted = Vec3::refract(&unit_dir, &rec.normal, etai_over_etat);
-                    *scattered = Ray::new(rec.p, refracted);
+                    *scattered = Ray::new(rec.p, refracted, r_in.time());
                 }
                 true
             }
+            Material::Iso(mat) => {
+                *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(rng), r_in.time());
+                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                true
+            }
+            Material::DiffLight(_) => false,
+        }
+    }
+
+    /// Color emitted by the material.
+    pub fn emitted(&self, u: f64, v: f64, p: &crate::vec3::Point3) -> Color {
+        match self {
+            Material::DiffLight(diff) => diff.emit.value(u, v, p),
+            _ => Color::new_with(0.0),
         }
     }
 }
 
 /// Diffuse material.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone)]
 pub struct Lambert {
     /// Base color of the material.
-    pub albedo: Color,
+    pub albedo: Arc<dyn Texture + Send + Sync>,
 }
 
 impl Lambert {
     /// Create a new `Lambert` material.
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(color: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { albedo: color }
+    }
+}
+
+impl core::default::Default for Lambert {
+    fn default() -> Self {
+        Self {
+            albedo: Arc::new(SolidColor::new(0.2, 0.6, 0.8)),
+        }
     }
 }
 
 /// Metallic material.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Metal {
     /// Base color of the material.
     pub albedo: Color,
+    /// Fuzz factor of the reflection.
+    pub fuzz: f64,
 }
 
 impl Metal {
     /// Create a new `Metal` material.
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(albedo: Color, fuzz: f64) -> Self {
+        Self {
+            albedo,
+            fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
+        }
     }
 }
 
 /// Dielectric material for simulating clear objects like water and glass.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Diel {
     /// Refraction index of the dielectric.
     ///
@@ -115,6 +153,33 @@ impl Diel {
     }
 }
 
+#[derive(Clone)]
+/// Diffuse emitting light.
+pub struct DiffuseLight {
+    /// Diffuse emitting texture.
+    pub emit: Arc<dyn Texture + Send + Sync>,
+}
+
+impl DiffuseLight {
+    /// Create a new diffuse light.
+    pub fn new(emit: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { emit }
+    }
+}
+
+/// Isotropic scattering material.
+#[derive(Clone)]
+pub struct Isotropic {
+    /// Based texture of the material.
+    pub albedo: Arc<dyn Texture + Send + Sync>,
+}
+
+impl Isotropic {
+    /// Create new isotropic material.
+    pub fn new(albedo: Arc<dyn Texture + Send + Sync>) -> Self {
+        Self { albedo }
+    }
+}
 /// Schlick approximation for reflectivity.
 #[inline]
 pub fn schlick(cos: f64, ref_idx: f64) -> f64 {

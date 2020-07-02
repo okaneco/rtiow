@@ -14,6 +14,8 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
@@ -26,6 +28,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        time0: f64,
+        time1: f64,
     ) -> Self {
         let viewport_height = 2.0 * (vfov.to_radians() * 0.5).tan();
         let viewport_width = aspect_ratio * viewport_height;
@@ -46,7 +50,24 @@ impl Camera {
             v,
             w,
             lens_radius: aperture * 0.5,
+            time0,
+            time1,
         }
+    }
+
+    /// Create a new default camera from an aspect ratio.
+    pub fn new_with(img_w: u32, img_h: u32) -> Self {
+        Camera::new(
+            Point3::new_with(0.0),
+            Point3::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            90.0,
+            f64::from(img_w) * f64::from(img_h).recip(),
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+        )
     }
 
     /// Create a ray from the camera.
@@ -57,6 +78,7 @@ impl Camera {
         Ray::new(
             self.orig + offset,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.orig - offset,
+            rng.gen_range(self.time0, self.time1),
         )
     }
 }
@@ -69,6 +91,8 @@ impl core::default::Default for Camera {
             Vec3::new(0.0, 1.0, 0.0),
             90.0,
             16.0 / 9.0,
+            0.0,
+            1.0,
             0.0,
             1.0,
         )

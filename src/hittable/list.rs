@@ -1,13 +1,15 @@
+use std::sync::Arc;
+
 use crate::hittable::{HitRecord, Hittable};
 
 /// Trait for attaching to objects that can be detected by rays.
-#[derive(Clone, Debug, Default)]
-pub struct HittableList<H: Hittable> {
+#[derive(Clone, Default)]
+pub struct HittableList {
     /// List of `Hittable` objects.
-    pub objects: Vec<H>,
+    pub objects: Vec<Arc<dyn Hittable + Send + Sync>>,
 }
 
-impl<H: Hittable> HittableList<H> {
+impl HittableList {
     /// Create a new `HittableList`.
     pub fn new() -> Self {
         Self {
@@ -16,7 +18,7 @@ impl<H: Hittable> HittableList<H> {
     }
 
     /// Create a new `HittableList` constructed from an initial object.
-    pub fn new_from(object: H) -> Self {
+    pub fn new_from(object: Arc<dyn Hittable + Send + Sync>) -> Self {
         Self {
             objects: core::iter::once(object).collect(),
         }
@@ -30,7 +32,7 @@ impl<H: Hittable> HittableList<H> {
     }
 
     /// Add an object to the `HittableList`.
-    pub fn add(&mut self, object: H) {
+    pub fn add(&mut self, object: Arc<dyn Hittable + Send + Sync>) {
         self.objects.push(object);
     }
 
@@ -40,7 +42,7 @@ impl<H: Hittable> HittableList<H> {
     }
 }
 
-impl<H: Hittable> Hittable for HittableList<H> {
+impl Hittable for HittableList {
     fn hit(&self, r: &crate::ray::Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord::default();
         let mut hit_anything = false;
@@ -50,10 +52,33 @@ impl<H: Hittable> Hittable for HittableList<H> {
             if o.hit(r, t_min, closest_so_far, &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *rec = temp_rec;
+                *rec = temp_rec.clone();
             }
         }
 
         hit_anything
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut crate::aabb::Aabb) -> bool {
+        if self.objects.is_empty() {
+            return false;
+        }
+
+        let mut temp_box = crate::aabb::Aabb::default();
+        let mut first_box = true;
+
+        for object in self.objects.iter() {
+            if !(object.bounding_box(t0, t1, &mut temp_box)) {
+                return false;
+            }
+            *output_box = if first_box {
+                temp_box
+            } else {
+                crate::aabb::Aabb::surrounding_box(output_box, &temp_box)
+            };
+            first_box = false;
+        }
+
+        true
     }
 }

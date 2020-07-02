@@ -1,4 +1,9 @@
-//! Various helper functions for faster conversion between float and integers.
+//! Various utility functions for faster conversion between float and integers.
+
+/// The numeric constant PI.
+pub const PI: f64 = core::f64::consts::PI;
+/// The numeric constant PI multiplied by 2.
+pub const TWO_PI: f64 = 2.0 * core::f64::consts::PI;
 
 // C23 = 2^23, in f32
 // C52 = 2^52, in f64
@@ -33,7 +38,7 @@ impl IntoU8 for f64 {
 
 impl crate::vec3::Color {
     /// Convert a float RGB color into u8 with gamma correction.
-    pub fn into_u8_color(&self, samples: f64) -> crate::vec3::ColorU8 {
+    pub fn into_u8_color(self, samples: f64) -> crate::vec3::ColorU8 {
         let scale = samples.recip();
 
         crate::vec3::ColorU8(
@@ -41,5 +46,21 @@ impl crate::vec3::Color {
             crate::conversion::IntoU8::into_u8((self.1 * scale).sqrt()),
             crate::conversion::IntoU8::into_u8((self.2 * scale).sqrt()),
         )
+    }
+}
+
+/// Trait for fast conversion from uint to f64.
+pub trait IntoF64 {
+    /// Convert unsigned integer to f64.
+    fn into_f64(self) -> f64;
+}
+
+impl IntoF64 for u8 {
+    fn into_f64(self) -> f64 {
+        let comp_u = self as u64 + C52;
+        let comp_f = f64::from_bits(comp_u) - f64::from_bits(C52);
+        let max_u = core::u8::MAX as u64 + C52;
+        let max_f = (f64::from_bits(max_u) - f64::from_bits(C52)).recip();
+        comp_f * max_f
     }
 }
