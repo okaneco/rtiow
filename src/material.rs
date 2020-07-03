@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use crate::hittable::HitRecord;
+use crate::onb::Onb;
 use crate::ray::Ray;
 use crate::texture::{SolidColor, Texture};
 use crate::vec3::{Color, Vec3};
@@ -41,10 +42,11 @@ impl Material {
     ) -> bool {
         match self {
             Material::Lambertian(mat) => {
-                let direction = rec.normal + Vec3::random_unit_vector(rng);
+                let uvw = Onb::build_from_w(&rec.normal);
+                let direction = uvw.local(&Vec3::random_cosine_direction(rng));
                 *scattered = Ray::new(rec.p, direction.unit_vector(), r_in.time());
                 *albedo = mat.albedo.value(rec.u, rec.v, &rec.p);
-                *pdf = rec.normal.dot(&scattered.direction()) * core::f64::consts::FRAC_1_PI;
+                *pdf = uvw.w().dot(&scattered.direction()) * core::f64::consts::FRAC_1_PI;
                 true
             }
             Material::Metallic(mat) => {
