@@ -85,18 +85,16 @@ impl Perlin {
                 w = w * w * (3.0 - 2.0 * w);
 
                 let mut c = [[[0.0f64; 2]; 2]; 2];
-                (0..2)
-                    .flat_map(|x| {
-                        core::iter::repeat(x)
-                            .zip(0..2)
-                            .flat_map(|y| core::iter::repeat(y).zip(0..2))
-                    })
-                    .for_each(|((di, dj), dk)| {
-                        c[di][dj][dk] = self.ranfloat[(self.perm_x[(i as usize + di) & 255]
-                            ^ self.perm_y[((j as usize + dj) & 255)]
-                            ^ self.perm_z[((k as usize + dk) & 255)])
-                            as usize];
-                    });
+                for di in 0..2 {
+                    for dj in 0..2 {
+                        for dk in 0..2 {
+                            c[di][dj][dk] = self.ranfloat[(self.perm_x[(i as usize + di) & 255]
+                                ^ self.perm_y[((j as usize + dj) & 255)]
+                                ^ self.perm_z[((k as usize + dk) & 255)])
+                                as usize];
+                        }
+                    }
+                }
 
                 trilinear_interp(c, u, v, w)
             }
@@ -115,18 +113,16 @@ impl Perlin {
                 w = w * w * (3.0 - 2.0 * w);
 
                 let mut c = [[[Vec3::default(); 2]; 2]; 2];
-                (0..2)
-                    .flat_map(|x| {
-                        core::iter::repeat(x)
-                            .zip(0..2)
-                            .flat_map(|y| core::iter::repeat(y).zip(0..2))
-                    })
-                    .for_each(|((di, dj), dk)| {
-                        c[di][dj][dk] = self.ranvec[(self.perm_x[(i as usize + di) & 255]
-                            ^ self.perm_y[((j as usize + dj) & 255)]
-                            ^ self.perm_z[((k as usize + dk) & 255)])
-                            as usize];
-                    });
+                for di in 0..2 {
+                    for dj in 0..2 {
+                        for dk in 0..2 {
+                            c[di][dj][dk] = self.ranvec[(self.perm_x[(i as usize + di) & 255]
+                                ^ self.perm_y[((j as usize + dj) & 255)]
+                                ^ self.perm_z[((k as usize + dk) & 255)])
+                                as usize];
+                        }
+                    }
+                }
 
                 Self::perlin_interp(c, u, v, w)
             }
@@ -135,19 +131,20 @@ impl Perlin {
 
     #[inline]
     fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
-        (0..2)
-            .flat_map(|x| {
-                core::iter::repeat(x)
-                    .zip(0..2)
-                    .flat_map(|y| core::iter::repeat(y).zip(0..2))
-            })
-            .fold(0.0, |acc, ((i, j), k)| {
-                let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
-                acc + ((i as f64 * u + (1 - i) as f64 * (1.0 - u))
-                    * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
-                    * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
-                    * (c[i][j][k]).dot(&weight_v))
-            })
+        let mut acc = 0.0;
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
+                    acc += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
+                        * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
+                        * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
+                        * (c[i][j][k]).dot(&weight_v);
+                }
+            }
+        }
+
+        acc
     }
 
     /// Turbulence noise calculation.
@@ -175,16 +172,17 @@ impl core::default::Default for NoiseType {
 /// Trilinear interpolation.
 #[inline]
 pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
-    (0..2)
-        .flat_map(|x| {
-            core::iter::repeat(x)
-                .zip(0..2)
-                .flat_map(|y| core::iter::repeat(y).zip(0..2))
-        })
-        .fold(0.0, |acc, ((i, j), k)| {
-            acc + ((i as f64 * u + (1 - i) as f64 * (1.0 - u))
-                * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
-                * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
-                * c[i][j][k])
-        })
+    let mut acc = 0.0;
+    for i in 0..2 {
+        for j in 0..2 {
+            for k in 0..2 {
+                acc += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
+                    * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
+                    * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
+                    * c[i][j][k];
+            }
+        }
+    }
+
+    acc
 }

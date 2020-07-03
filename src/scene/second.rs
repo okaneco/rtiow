@@ -598,7 +598,6 @@ pub fn cornell_box<R: rand::Rng>(
         &Point3::new(165.0, 330.0, 165.0),
         white.clone(),
     ));
-
     let box1 = Translate::new(
         Arc::new(RotateY::new(box1, 15.0, 0.0, 1.0)),
         Vec3::new(265.0, 0.0, 295.0),

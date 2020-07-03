@@ -63,15 +63,20 @@ pub fn ray_color<R: Rng>(
     }
 
     let mut scattered = Ray::default();
-    let mut attenuation = Color::default();
     let emitted = rec.material.emitted(rec.u, rec.v, &rec.p);
+    let mut pdf = 0.0;
+    let mut albedo = Color::default();
 
     if !rec
         .material
-        .scatter(rng, r, &rec, &mut attenuation, &mut scattered)
+        .scatter(rng, r, &rec, &mut albedo, &mut scattered, &mut pdf)
     {
         return emitted;
     }
 
-    emitted + attenuation * ray_color(rng, &scattered, background, world, max_depth - 1)
+    emitted
+        + albedo
+            * rec.material.scattering_pdf(rng, r, &rec, &scattered)
+            * ray_color(rng, &scattered, background, world, max_depth - 1)
+            * pdf.recip()
 }

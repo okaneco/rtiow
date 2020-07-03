@@ -2,7 +2,7 @@
 
 use rand::SeedableRng;
 
-use rtiow::scene::second::*;
+use rtiow::scene::third::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize values for the image output
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
 
     // Create world and camera
-    let (cam, world) = final_scene(&mut rng, img_w, img_h)?;
+    let (cam, world) = cornell_box(&mut rng, img_w, img_h)?;
 
     // Raytrace!
     /* Single thread */

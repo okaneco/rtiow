@@ -35,14 +35,16 @@ impl Material {
         rng: &mut R,
         r_in: &Ray,
         rec: &HitRecord,
-        attenuation: &mut Color,
+        albedo: &mut Color,
         scattered: &mut Ray,
+        pdf: &mut f64,
     ) -> bool {
         match self {
             Material::Lambertian(mat) => {
-                let scatter_dir = rec.normal + Vec3::random_unit_vector(rng);
-                *scattered = Ray::new(rec.p, scatter_dir, r_in.time());
-                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                let direction = rec.normal + Vec3::random_unit_vector(rng);
+                *scattered = Ray::new(rec.p, direction.unit_vector(), r_in.time());
+                *albedo = mat.albedo.value(rec.u, rec.v, &rec.p);
+                *pdf = rec.normal.dot(&scattered.direction()) * core::f64::consts::FRAC_1_PI;
                 true
             }
             Material::Metallic(mat) => {
@@ -52,11 +54,11 @@ impl Material {
                     reflected + mat.fuzz * Vec3::random_in_unit_sphere(rng),
                     r_in.time(),
                 );
-                *attenuation = mat.albedo;
+                *albedo = mat.albedo;
                 scattered.direction().dot(&rec.normal) > 0.0
             }
             Material::Dielectric(ri) => {
-                *attenuation = Color::new_with(1.0);
+                *albedo = Color::new_with(1.0);
                 let etai_over_etat = if rec.front_face {
                     1.0 * ri.refraction_index.recip()
                 } else {
@@ -80,10 +82,34 @@ impl Material {
             }
             Material::Iso(mat) => {
                 *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(rng), r_in.time());
-                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                *albedo = mat.albedo.value(rec.u, rec.v, &rec.p);
                 true
             }
             Material::DiffLight(_) => false,
+        }
+    }
+
+    /// Scattering probability distribution function for importance sampling.
+    pub fn scattering_pdf<R: rand::Rng>(
+        &self,
+        _rng: &mut R,
+        _r_in: &Ray,
+        rec: &HitRecord,
+        scattered: &Ray,
+    ) -> f64 {
+        match self {
+            Material::Lambertian(_mat) => {
+                let cosine = rec.normal.dot(&scattered.direction().unit_vector());
+                if cosine < 0.0 {
+                    0.0
+                } else {
+                    cosine * core::f64::consts::FRAC_1_PI
+                }
+            }
+            Material::Metallic(_mat) => todo!(),
+            Material::Dielectric(_ri) => todo!(),
+            Material::Iso(_mat) => todo!(),
+            Material::DiffLight(_) => todo!(),
         }
     }
 
