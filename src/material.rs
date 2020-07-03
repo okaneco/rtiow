@@ -43,7 +43,7 @@ impl Material {
         match self {
             Material::Lambertian(mat) => {
                 let uvw = Onb::build_from_w(&rec.normal);
-                let direction = uvw.local(&Vec3::random_cosine_direction(rng));
+                let direction = uvw.local(&crate::pdf::CosPdf::random_cosine_direction(rng));
                 *scattered = Ray::new(rec.p, direction.unit_vector(), r_in.time());
                 *albedo = mat.albedo.value(rec.u, rec.v, &rec.p);
                 *pdf = uvw.w().dot(&scattered.direction()) * core::f64::consts::FRAC_1_PI;

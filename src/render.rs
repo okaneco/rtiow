@@ -12,13 +12,13 @@ use crate::ray::ray_color;
 use crate::vec3::Color;
 
 /// Run ray tracing in a single thread.
-pub fn run_single_ppm<R: Rng, W: Write>(
+pub fn run_single_ppm<W: Write>(
     mut w: &mut W,
     img_w: u32,
     img_h: u32,
     samples: u32,
     max_depth: u32,
-    mut rng: &mut R,
+    mut rng: &mut rand::rngs::ThreadRng,
     world: &dyn Hittable,
     cam: &Camera,
     background: &Color,

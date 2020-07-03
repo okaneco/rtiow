@@ -128,19 +128,6 @@ impl Vec3 {
         }
     }
 
-    /// Generate random cosine directions, as for PDFs.
-    pub fn random_cosine_direction<R: Rng>(rng: &mut R) -> Self {
-        let r1 = rng.gen::<f64>();
-        let r2 = rng.gen::<f64>();
-        let z = (1.0 - r2).sqrt();
-
-        let phi = TWO_PI * r1;
-        let x = phi.cos() * r2.sqrt();
-        let y = phi.sin() * r2.sqrt();
-
-        Vec3::new(x, y, z)
-    }
-
     /// Calculate the reflection of a vector and normal `n`.
     #[inline]
     pub fn reflect(v: &Self, n: &Self) -> Self {

@@ -1,7 +1,7 @@
 //! Vector that simulates the path of light in a scene.
-use rand::Rng;
 
 use crate::hittable::{HitRecord, Hittable};
+use crate::pdf::Pdf;
 use crate::vec3::{Color, Point3, Vec3};
 
 /// Ray struct used for calculating where light hits in the scene.
@@ -43,8 +43,8 @@ impl Ray {
 }
 
 /// Color produced by a ray bounce.
-pub fn ray_color<R: Rng>(
-    rng: &mut R,
+pub fn ray_color(
+    rng: &mut rand::rngs::ThreadRng,
     r: &Ray,
     background: &Color,
     world: &dyn Hittable,
@@ -64,41 +64,35 @@ pub fn ray_color<R: Rng>(
 
     let mut scattered = Ray::default();
     let emitted = rec.material.emitted(r, &rec);
-    let mut pdf = 0.0;
+    let mut pdf_val = 0.0;
     let mut albedo = Color::default();
 
     if !rec
         .material
-        .scatter(rng, r, &rec, &mut albedo, &mut scattered, &mut pdf)
+        .scatter(rng, r, &rec, &mut albedo, &mut scattered, &mut pdf_val)
     {
         return emitted;
     }
 
-    let on_light = Point3::new(
-        rng.gen_range(213.0, 343.0),
+    let light_shape = std::sync::Arc::new(crate::aarect::AaRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
         554.0,
-        rng.gen_range(227.0, 332.0),
-    );
-    let mut to_light = on_light - rec.p;
-    let distance_squared = to_light.length_squared();
-    to_light = to_light.unit_vector();
+        std::sync::Arc::new(crate::material::Material::default()),
+        crate::aarect::Plane::Xz,
+    ));
+    let p0 = std::sync::Arc::new(crate::pdf::HittablePdf::new(&rec.p, light_shape));
+    let p1 = std::sync::Arc::new(crate::pdf::CosPdf::new(&rec.normal));
+    let p = crate::pdf::MixturePdf::new(vec![p0, p1]);
 
-    if to_light.dot(&rec.normal) < 0.0 {
-        return emitted;
-    }
-
-    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-    let light_cos = to_light.y().abs();
-    if light_cos < 0.0000_01 {
-        return emitted;
-    }
-
-    let pdf = distance_squared * (light_cos * light_area).recip();
-    let scattered = Ray::new(rec.p, to_light, r.time());
+    scattered = Ray::new(rec.p, p.generate(rng), r.time());
+    pdf_val = p.value(&scattered.direction());
 
     emitted
         + albedo
             * rec.material.scattering_pdf(rng, r, &rec, &scattered)
             * ray_color(rng, &scattered, background, world, max_depth - 1)
-            * pdf.recip()
+            * pdf_val.recip()
 }
