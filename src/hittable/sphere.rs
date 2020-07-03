@@ -83,6 +83,27 @@ impl Hittable for Sphere {
         };
         true
     }
+    fn pdf_value(&self, o: &Point3, v: &Vec3) -> f64 {
+        let mut rec = HitRecord::default();
+        if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, f64::INFINITY, &mut rec) {
+            return 0.0;
+        }
+
+        let cos_theta_max =
+            (1.0 - self.radius * self.radius * (self.center - *o).length_squared().recip()).sqrt();
+
+        (TWO_PI * (1.0 - cos_theta_max)).recip()
+    }
+    fn random(&self, rng: &mut rand::prelude::ThreadRng, origin: &Vec3) -> Vec3 {
+        let direction = self.center - *origin;
+        let distance_squared = direction.length_squared();
+        let uvw = crate::onb::Onb::build_from_w(&direction);
+        uvw.local(&crate::pdf::random_to_sphere(
+            rng,
+            self.radius,
+            distance_squared,
+        ))
+    }
 }
 
 /// Moving sphere object, used for motion blur.

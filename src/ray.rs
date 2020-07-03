@@ -1,6 +1,7 @@
 //! Vector that simulates the path of light in a scene.
 
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::ScatterRecord;
 use crate::pdf::Pdf;
 use crate::vec3::{Color, Point3, Vec3};
 
@@ -48,6 +49,7 @@ pub fn ray_color(
     r: &Ray,
     background: &Color,
     world: &dyn Hittable,
+    lights: std::sync::Arc<dyn Hittable + Send + Sync>,
     max_depth: u32,
 ) -> Color {
     let mut rec = HitRecord::default();
@@ -62,37 +64,35 @@ pub fn ray_color(
         return *background;
     }
 
-    let mut scattered = Ray::default();
+    let mut srec = ScatterRecord::default();
     let emitted = rec.material.emitted(r, &rec);
-    let mut pdf_val = 0.0;
-    let mut albedo = Color::default();
-
-    if !rec
-        .material
-        .scatter(rng, r, &rec, &mut albedo, &mut scattered, &mut pdf_val)
-    {
+    if !rec.material.scatter(rng, &r, &rec, &mut srec) {
         return emitted;
     }
+    if let Some(_) = srec.specular_ray {
+        return srec.attenuation
+            * ray_color(
+                rng,
+                &srec.specular_ray.unwrap(),
+                background,
+                world,
+                lights,
+                max_depth - 1,
+            );
+    }
 
-    let light_shape = std::sync::Arc::new(crate::aarect::AaRect::new(
-        213.0,
-        343.0,
-        227.0,
-        332.0,
-        554.0,
-        std::sync::Arc::new(crate::material::Material::default()),
-        crate::aarect::Plane::Xz,
-    ));
-    let p0 = std::sync::Arc::new(crate::pdf::HittablePdf::new(&rec.p, light_shape));
-    let p1 = std::sync::Arc::new(crate::pdf::CosPdf::new(&rec.normal));
-    let p = crate::pdf::MixturePdf::new(vec![p0, p1]);
+    let light_ptr = std::sync::Arc::new(crate::pdf::HittablePdf::new(&rec.p, lights.clone()));
+    let p = crate::pdf::MixturePdf {
+        p0: light_ptr,
+        p1: srec.pdf_ptr.unwrap(),
+    };
 
-    scattered = Ray::new(rec.p, p.generate(rng), r.time());
-    pdf_val = p.value(&scattered.direction());
+    let scattered = Ray::new(rec.p, p.generate(rng), r.time());
+    let pdf_val = p.value(&scattered.direction());
 
     emitted
-        + albedo
+        + srec.attenuation
             * rec.material.scattering_pdf(rng, r, &rec, &scattered)
-            * ray_color(rng, &scattered, background, world, max_depth - 1)
+            * ray_color(rng, &scattered, background, world, lights, max_depth - 1)
             * pdf_val.recip()
 }

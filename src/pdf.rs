@@ -92,33 +92,46 @@ impl Pdf for HittablePdf {
 /// Struct for mixing the densities of PDFs.
 #[derive(Clone)]
 pub struct MixturePdf {
-    /// Vec of probability density functions.
-    pub p: Vec<Arc<dyn Pdf>>,
+    /// First probability density function.
+    pub p0: Arc<dyn Pdf>,
+    /// Second probability density function.
+    pub p1: Arc<dyn Pdf>,
 }
 
 impl MixturePdf {
     /// Create a new `MixturePdf`.
-    pub fn new(p: Vec<Arc<dyn Pdf>>) -> Self {
-        Self { p }
+    pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> Self {
+        Self { p0, p1 }
     }
 }
 
 impl Pdf for MixturePdf {
     fn value(&self, direction: &Vec3) -> std::primitive::f64 {
-        if self.p.is_empty() {
-            return 0.0;
-        }
-
-        // Mix all the Pdfs together evenly
-        let factor = (self.p.len() as f64).recip();
-        self.p
-            .iter()
-            .fold(0.0, |acc, x| acc + (factor * x.value(direction)))
+        0.5 * self.p0.value(direction) + 0.5 * self.p1.value(direction)
     }
 
     fn generate(&self, rng: &mut rand::prelude::ThreadRng) -> Vec3 {
-        self.p
-            .get(rng.gen_range(0, self.p.len()))
-            .map_or_else(|| Vec3::default(), |pdf| pdf.generate(rng))
+        if rng.gen::<f32>() < 0.5 {
+            self.p0.generate(rng)
+        } else {
+            self.p1.generate(rng)
+        }
     }
+}
+
+/// Utility function for sphere PDF calculation.
+pub fn random_to_sphere(
+    rng: &mut rand::rngs::ThreadRng,
+    radius: f64,
+    distance_squared: f64,
+) -> Vec3 {
+    let r1 = rng.gen::<f64>();
+    let r2 = rng.gen::<f64>();
+    let z = 1.0 + r2 * ((1.0 - radius * radius * distance_squared.recip()).sqrt() - 1.0);
+
+    let phi = crate::conversion::TWO_PI * r1;
+    let x = phi.cos() * (1.0 - z * z).sqrt();
+    let y = phi.sin() * (1.0 - z * z).sqrt();
+
+    Vec3::new(x, y, z)
 }

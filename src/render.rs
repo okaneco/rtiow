@@ -20,6 +20,7 @@ pub fn run_single_ppm<W: Write>(
     max_depth: u32,
     mut rng: &mut rand::rngs::ThreadRng,
     world: &dyn Hittable,
+    lights: std::sync::Arc<dyn Hittable + Send + Sync>,
     cam: &Camera,
     background: &Color,
 ) -> Result<(), std::io::Error> {
@@ -33,7 +34,7 @@ pub fn run_single_ppm<W: Write>(
                 let u = (f64::from(i) + rng.gen::<f64>()) * f64::from(img_w - 1).recip();
                 let v = (f64::from(j) + rng.gen::<f64>()) * f64::from(img_h - 1).recip();
                 let r = cam.get_ray(&mut rng, u, v);
-                pix + ray_color(&mut rng, &r, background, world, max_depth)
+                pix + ray_color(&mut rng, &r, background, world, lights.clone(), max_depth)
             });
             let color = pixel_color.into_u8_color(f64::from(samples));
             writeln!(&mut w, "{} {} {}", color.0, color.1, color.2)?;
@@ -52,6 +53,7 @@ pub fn run_threaded_ppm<W, H>(
     samples: u32,
     max_depth: u32,
     world: &H,
+    lights: std::sync::Arc<dyn Hittable + Send + Sync>,
     cam: &Camera,
     background: &Color,
 ) -> Result<(), std::io::Error>
@@ -70,7 +72,7 @@ where
                 let v = (f64::from(img_h - 1 - x / img_w) + rng.gen::<f64>())
                     * f64::from(img_h - 1).recip();
                 let r = cam.get_ray(&mut rng, u, v);
-                pix + ray_color(&mut rng, &r, background, world, max_depth)
+                pix + ray_color(&mut rng, &r, background, world, lights.clone(), max_depth)
             });
             pixel_color.into_u8_color(f64::from(samples))
         })

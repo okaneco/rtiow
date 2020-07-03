@@ -5,6 +5,8 @@
 
 ![book1 cover](img/second/21-final-scene.jpg)  
 
+![pdf for sphere](img/third/04-cornell-glass.jpg)  
+
 Rust port of RTIOW by Peter Shirley, v3.1.2, 2020-06-03  
 https://raytracing.github.io/
 
@@ -12,7 +14,7 @@ Completed books are tagged as a release.
 
 - [x] - *Ray Tracing in One Weekend*
 - [x] - *The Next Week*
-- [ ] - *The Rest of Your Life*
+- [x] - *The Rest of Your Life*
 
 ### Table of Contents
 1. [*Ray Tracing in One Weekend*](#oneweekend)
@@ -169,16 +171,22 @@ See: https://github.com/RayTracing/raytracing.github.io/issues/425
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*
 
-Many of the images in the book were different sampling comparisons of the
-Cornell box scene, so I've skipped their inclusion.
+This book focuses on different sampling methods and comparisons of the
+Cornell box scene, so I've skipped their inclusion. Topics covered included
+Monte Carlo integration and using probability density functions to sample the
+lights and hittables in the scene directly.
 
 Sampling the lights directly, finished in under a second - 10 samples  
 ![sample lights directly](img/third/00-sampling-lights-directly.jpg)  
 Made the light one-sided, removed some noise near the light - 10 samples  
 ![unidirectional light](img/third/01-unidirectional-light.jpg)  
 Added mixture PDF for mixing the contributions of lighting and reflection -
-1000 samples  
+1,000 samples  
 ![mixture](img/third/02-mixture-pdf.jpg)  
+Added specular to the model, metal block in the Cornell scene - 1,000 samples  
+![specular metal box](img/third/03-cornell-metal.jpg)  
+Sphere with new PDF functions - 1,000 samples  
+![pdf for sphere](img/third/04-cornell-glass.jpg)  
 
 
 [Back to top](#top)
