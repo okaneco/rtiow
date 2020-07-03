@@ -88,29 +88,27 @@ impl RotateY {
         let mut min = crate::vec3::Point3::new_with(f64::INFINITY);
         let mut max = crate::vec3::Point3::new_with(f64::NEG_INFINITY);
 
-        (0..2)
-            .flat_map(|x| {
-                core::iter::repeat(x)
-                    .zip(0..2)
-                    .flat_map(|y| core::iter::repeat(y).zip(0..2))
-            })
-            .for_each(|((i, j), k)| {
-                let x = f64::from(i) * bbox.max().x() + f64::from(1 - i) * bbox.min().x();
-                let y = f64::from(j) * bbox.max().y() + f64::from(1 - i) * bbox.min().y();
-                let z = f64::from(k) * bbox.max().z() + f64::from(1 - i) * bbox.min().z();
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = f64::from(i) * bbox.max().x() + f64::from(1 - i) * bbox.min().x();
+                    let y = f64::from(j) * bbox.max().y() + f64::from(1 - i) * bbox.min().y();
+                    let z = f64::from(k) * bbox.max().z() + f64::from(1 - i) * bbox.min().z();
 
-                let newx = cos_theta * x + sin_theta * z;
-                let newz = -sin_theta * x + cos_theta * z;
+                    let newx = cos_theta * x + sin_theta * z;
+                    let newz = -sin_theta * x + cos_theta * z;
 
-                let tester = crate::vec3::Vec3(newx, y, newz);
+                    let tester = crate::vec3::Vec3(newx, y, newz);
 
-                min.0 = min.0.min(tester.0);
-                max.0 = max.0.max(tester.0);
-                min.1 = min.1.min(tester.1);
-                max.1 = max.1.max(tester.1);
-                min.2 = min.2.min(tester.2);
-                max.2 = max.2.max(tester.2);
-            });
+                    min.0 = min.0.min(tester.0);
+                    max.0 = max.0.max(tester.0);
+                    min.1 = min.1.min(tester.1);
+                    max.1 = max.1.max(tester.1);
+                    min.2 = min.2.min(tester.2);
+                    max.2 = max.2.max(tester.2);
+                }
+            }
+        }
 
         Self {
             pointer,

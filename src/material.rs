@@ -28,6 +28,42 @@ impl core::default::Default for Material {
     }
 }
 
+/// Struct that holds whether a material has speculars.
+#[derive(Clone)]
+pub struct ScatterRecord {
+    /// The ray of the specular reflection.
+    pub specular_ray: Option<Ray>,
+    /// The color of the scattering.
+    pub attenuation: Color,
+    /// The PDF of the material.
+    pub pdf_ptr: Option<Arc<dyn crate::pdf::Pdf + Send + Sync>>,
+}
+
+impl ScatterRecord {
+    /// Create a new `ScatterRecord`.
+    pub fn new(
+        specular_ray: Option<Ray>,
+        attenuation: Color,
+        pdf_ptr: Arc<dyn crate::pdf::Pdf + Send + Sync>,
+    ) -> Self {
+        Self {
+            specular_ray,
+            attenuation,
+            pdf_ptr: Some(pdf_ptr),
+        }
+    }
+}
+
+impl core::default::Default for ScatterRecord {
+    fn default() -> Self {
+        Self {
+            specular_ray: None,
+            attenuation: Color::default(),
+            pdf_ptr: None,
+        }
+    }
+}
+
 impl Material {
     /// Scattering function for how the material affects light.
     pub fn scatter<R: rand::Rng>(
@@ -35,28 +71,28 @@ impl Material {
         rng: &mut R,
         r_in: &Ray,
         rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
+        srec: &mut ScatterRecord,
     ) -> bool {
         match self {
             Material::Lambertian(mat) => {
-                let scatter_dir = rec.normal + Vec3::random_unit_vector(rng);
-                *scattered = Ray::new(rec.p, scatter_dir, r_in.time());
-                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                srec.specular_ray = None;
+                srec.attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                srec.pdf_ptr = Some(Arc::new(crate::pdf::CosPdf::new(&rec.normal)));
+
                 true
             }
             Material::Metallic(mat) => {
                 let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-                *scattered = Ray::new(
+                srec.specular_ray = Some(Ray::new(
                     rec.p,
                     reflected + mat.fuzz * Vec3::random_in_unit_sphere(rng),
                     r_in.time(),
-                );
-                *attenuation = mat.albedo;
-                scattered.direction().dot(&rec.normal) > 0.0
+                ));
+                srec.attenuation = mat.albedo;
+                true
             }
             Material::Dielectric(ri) => {
-                *attenuation = Color::new_with(1.0);
+                srec.attenuation = Color::new_with(1.0);
                 let etai_over_etat = if rec.front_face {
                     1.0 * ri.refraction_index.recip()
                 } else {
@@ -71,26 +107,60 @@ impl Material {
                     || rng.gen::<f64>() < schlick(cos_theta, etai_over_etat)
                 {
                     let reflected = Vec3::reflect(&unit_dir, &rec.normal);
-                    *scattered = Ray::new(rec.p, reflected, r_in.time());
+                    srec.specular_ray = Some(Ray::new(rec.p, reflected, r_in.time()));
                 } else {
                     let refracted = Vec3::refract(&unit_dir, &rec.normal, etai_over_etat);
-                    *scattered = Ray::new(rec.p, refracted, r_in.time());
+                    srec.specular_ray = Some(Ray::new(rec.p, refracted, r_in.time()));
                 }
                 true
             }
             Material::Iso(mat) => {
-                *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(rng), r_in.time());
-                *attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
+                srec.specular_ray = Some(Ray::new(
+                    rec.p,
+                    Vec3::random_in_unit_sphere(rng),
+                    r_in.time(),
+                ));
+                srec.attenuation = mat.albedo.value(rec.u, rec.v, &rec.p);
                 true
             }
             Material::DiffLight(_) => false,
         }
     }
 
-    /// Color emitted by the material.
-    pub fn emitted(&self, u: f64, v: f64, p: &crate::vec3::Point3) -> Color {
+    /// Scattering probability distribution function for importance sampling.
+    pub fn scattering_pdf<R: rand::Rng>(
+        &self,
+        _rng: &mut R,
+        _r_in: &Ray,
+        rec: &HitRecord,
+        scattered: &Ray,
+    ) -> f64 {
         match self {
-            Material::DiffLight(diff) => diff.emit.value(u, v, p),
+            Material::Lambertian(_mat) => {
+                let cosine = rec.normal.dot(&scattered.direction().unit_vector());
+                if cosine < 0.0 {
+                    0.0
+                } else {
+                    cosine * core::f64::consts::FRAC_1_PI
+                }
+            }
+            Material::Metallic(_mat) => todo!(),
+            Material::Dielectric(_ri) => todo!(),
+            Material::Iso(_mat) => todo!(),
+            Material::DiffLight(_) => todo!(),
+        }
+    }
+
+    /// Color emitted by the material.
+    pub fn emitted(&self, _r_in: &Ray, rec: &HitRecord) -> Color {
+        match self {
+            Material::DiffLight(diff) => {
+                if rec.front_face {
+                    diff.emit.value(rec.u, rec.v, &rec.p)
+                } else {
+                    Color::new_with(0.0)
+                }
+            }
             _ => Color::new_with(0.0),
         }
     }

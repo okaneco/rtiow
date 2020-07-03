@@ -1,5 +1,7 @@
 //! Axis-aligned rectangles for building objects.
 
+use rand::Rng;
+
 use crate::hittable::Hittable;
 use crate::material::Material;
 use crate::vec3::{Point3, Vec3};
@@ -160,6 +162,53 @@ impl Hittable for AaRect {
                     &Point3::new(self.k + PADDING, self.a1, self.b1),
                 );
                 true
+            }
+        }
+    }
+
+    fn pdf_value(&self, o: &Point3, v: &Vec3) -> f64 {
+        let mut rec = crate::hittable::HitRecord::default();
+        if !self.hit(
+            &crate::ray::Ray::new(*o, *v, 0.0),
+            0.001,
+            f64::INFINITY,
+            &mut rec,
+        ) {
+            return 0.0;
+        }
+
+        let area = (self.a1 - self.a0) * (self.b1 - self.b0);
+        let distance_squared = rec.t * rec.t * v.length_squared();
+        let cosine = (v.dot(&rec.normal) * v.length().recip()).abs();
+
+        distance_squared * (cosine * area).recip()
+    }
+
+    fn random(&self, rng: &mut rand::rngs::ThreadRng, origin: &Vec3) -> Vec3 {
+        match self.plane {
+            Plane::Xy => {
+                let random_point = Point3::new(
+                    rng.gen_range(self.a0, self.a1),
+                    rng.gen_range(self.b0, self.b1),
+                    self.k,
+                );
+                random_point - *origin
+            }
+            Plane::Xz => {
+                let random_point = Point3::new(
+                    rng.gen_range(self.a0, self.a1),
+                    self.k,
+                    rng.gen_range(self.b0, self.b1),
+                );
+                random_point - *origin
+            }
+            Plane::Yz => {
+                let random_point = Point3::new(
+                    self.k,
+                    rng.gen_range(self.a0, self.a1),
+                    rng.gen_range(self.b0, self.b1),
+                );
+                random_point - *origin
             }
         }
     }
