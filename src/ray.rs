@@ -63,7 +63,7 @@ pub fn ray_color<R: Rng>(
     }
 
     let mut scattered = Ray::default();
-    let emitted = rec.material.emitted(rec.u, rec.v, &rec.p);
+    let emitted = rec.material.emitted(r, &rec);
     let mut pdf = 0.0;
     let mut albedo = Color::default();
 
@@ -73,6 +73,28 @@ pub fn ray_color<R: Rng>(
     {
         return emitted;
     }
+
+    let on_light = Point3::new(
+        rng.gen_range(213.0, 343.0),
+        554.0,
+        rng.gen_range(227.0, 332.0),
+    );
+    let mut to_light = on_light - rec.p;
+    let distance_squared = to_light.length_squared();
+    to_light = to_light.unit_vector();
+
+    if to_light.dot(&rec.normal) < 0.0 {
+        return emitted;
+    }
+
+    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+    let light_cos = to_light.y().abs();
+    if light_cos < 0.0000_01 {
+        return emitted;
+    }
+
+    let pdf = distance_squared * (light_cos * light_area).recip();
+    let scattered = Ray::new(rec.p, to_light, r.time());
 
     emitted
         + albedo

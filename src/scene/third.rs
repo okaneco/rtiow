@@ -30,7 +30,7 @@ pub fn cornell_box<R: rand::Rng>(
     let difflight = DiffuseLight::new(Arc::new(SolidColor::new_with(15.0)));
 
     // Light
-    world.add(Arc::new(AaRect::new(
+    world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(
         213.0,
         343.0,
         227.0,
@@ -38,7 +38,7 @@ pub fn cornell_box<R: rand::Rng>(
         554.0,
         Arc::new(DiffLight(difflight)),
         Plane::Xz,
-    )));
+    )))));
 
     // Planes
     world.add(Arc::new(FlipFace::new(Arc::new(AaRect::new(

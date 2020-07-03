@@ -169,4 +169,10 @@ See: https://github.com/RayTracing/raytracing.github.io/issues/425
 <a name="restofyourlife"></a>
 ## *The Rest of Your Life*
 
+Sampling the lights directly, finished in under a second - 10 samples  
+![sample lights directly](img/third/00-sampling-lights-directly.jpg)  
+Made the light one-sided, removed some noise near the light - 10 samples  
+![unidirectional light](img/third/01-unidirectional-light.jpg)  
+
+
 [Back to top](#top)

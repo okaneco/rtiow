@@ -116,9 +116,15 @@ impl Material {
     }
 
     /// Color emitted by the material.
-    pub fn emitted(&self, u: f64, v: f64, p: &crate::vec3::Point3) -> Color {
+    pub fn emitted(&self, _r_in: &Ray, rec: &HitRecord) -> Color {
         match self {
-            Material::DiffLight(diff) => diff.emit.value(u, v, p),
+            Material::DiffLight(diff) => {
+                if rec.front_face {
+                    diff.emit.value(rec.u, rec.v, &rec.p)
+                } else {
+                    Color::new_with(0.0)
+                }
+            }
             _ => Color::new_with(0.0),
         }
     }
